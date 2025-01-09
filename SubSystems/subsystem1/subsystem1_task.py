@@ -7,3 +7,8 @@ class subsystem1_task:
         self.arrival_time = arrival_time
         self.processor_number = processor_number
         self.state = 'Ready'
+        self.proceed_execution_time = 0
+        self.remaining_execution_time = self.execution_time - self.proceed_execution_time
+    
+    def update_remaining_execution_time():
+        self.remaining_execution_time = self.execution_time - self.proceed_execution_time

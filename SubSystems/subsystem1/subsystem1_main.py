@@ -1,4 +1,6 @@
 import queue 
+import threading
+
 
 class subsystem1:
     def __init__():
@@ -7,6 +9,7 @@ class subsystem1:
         self.Ready_queue1 = queue.PriorityQueue()
         self.Ready_queue2 = queue.PriorityQueue()
         self.Ready_queue3 = queue.PriorityQueue()
+        self.lock = threading.Lock()
         
     def processor1():
         pass
