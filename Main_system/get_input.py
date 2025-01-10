@@ -68,4 +68,4 @@ def get_input():
     print()
     
     
-    return sub1_tasks, sub2_tasks, sub3_tasks
+    return sub1_tasks, sub2_tasks, sub3_tasks, sub1_r1, sub1_r2, sub2_r1, sub2_r2, sub3_r1, sub3_r2

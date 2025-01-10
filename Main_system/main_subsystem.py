@@ -3,7 +3,7 @@ from SubSystems.subsystem1.subsystem1_task import subsystem1_task
 from SubSystems.subsystem1.subsystem1_main import subsystem1
 
 def run():
-    sub1_tasks_dict, sub2_tasks_dict, sub3_tasks_dict = get_input()
+    sub1_tasks_dict, sub2_tasks_dict, sub3_tasks_dict, sub1_r1, sub1_r2, sub2_r1, sub2_r2, sub3_r1, sub3_r2 = get_input()
     sub1_tasks = []
     for task in sub1_tasks_dict:
         temp_task = subsystem1_task(task['name'], task['execution_time'], \
@@ -11,13 +11,15 @@ def run():
                                     task['arrival_time'], task['processor_number'])
         sub1_tasks.append(temp_task)
     
-    SUB1 = subsystem1(sub1_tasks)
+    SUB1 = subsystem1(sub1_tasks, sub1_r1, sub1_r2)
     SUB1.print_waiting_queue()
     # it has to go down after all sub systems initiated
     SUB1.start_subsystem()
     SUB1.print_ready_queue1()
     SUB1.print_ready_queue2()
     SUB1.print_ready_queue3()
+    SUB1.print_waiting_queue()
+    SUB1.print_resources_list_status()
     
     # ----------------------------------------------------------------------------------
     '''
