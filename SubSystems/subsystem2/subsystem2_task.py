@@ -5,4 +5,4 @@ class subsystem2_task:
         self.resource1_usage = resource1_usage
         self.resource2_usage = resource2_usage
         self.arrival_time = arrival_time
-        self.state = 'Ready'
+        self.state = 'Waiting'

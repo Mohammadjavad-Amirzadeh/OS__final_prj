@@ -1,5 +1,6 @@
-from Main_subsystem.get_input import get_input
+from Main_system.get_input import get_input
 from SubSystems.subsystem1.subsystem1_task import subsystem1_task
+from SubSystems.subsystem1.subsystem1_main import subsystem1
 
 def run():
     sub1_tasks_dict, sub2_tasks_dict, sub3_tasks_dict = get_input()
@@ -9,8 +10,15 @@ def run():
                                     task['resource1_usage'], task['resource2_usage'], \
                                     task['arrival_time'], task['processor_number'])
         sub1_tasks.append(temp_task)
-        
-    print(sub1_tasks)
+    
+    SUB1 = subsystem1(sub1_tasks)
+    SUB1.print_waiting_queue()
+    # it has to go down after all sub systems initiated
+    SUB1.start_subsystem()
+    SUB1.print_ready_queue1()
+    SUB1.print_ready_queue2()
+    SUB1.print_ready_queue3()
+    
     # ----------------------------------------------------------------------------------
     '''
     These codes are not complete

@@ -7,4 +7,4 @@ class subsystem3_task:
         self.arrival_time = arrival_time
         self.period = period
         self.repetitions_number = repetitions_number
-        self.state = 'Ready'
+        self.state = 'Waiting'
