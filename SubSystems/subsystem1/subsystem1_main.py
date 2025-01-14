@@ -74,7 +74,7 @@ class subsystem1:
         for _, task in list(self.Ready_queue3.queue):
             print(f"Task {task.name}, Arrival Time: {task.arrival_time}, State: {task.state}")
         
-    def processor1():
+    def processor1(sekf):
         pass
     
     def processor2():
