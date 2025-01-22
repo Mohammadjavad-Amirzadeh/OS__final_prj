@@ -4,7 +4,7 @@ import threading
 from SubSystems.subsystem1.subsystem1_task import subsystem1_task
 from Resources.Resource1 import resource1
 from Resources.Resource2 import resource2
-
+from SubSystems.subsystem1.subsystem1_scheduler import weighted_round_robbin
 
 
 class subsystem1:
@@ -160,7 +160,7 @@ class subsystem1:
                         
                         if flag:
                             self.processor1_assigned_task = task
-                            self.processor1_busy_time = 2
+                            self.processor1_busy_time = weighted_round_robbin(self.Ready_queue1, self.processor1_assigned_task)
                             # Process first tick immediately
                             self.processor1_assigned_task.proceed_executed_time += 1
                             self.processor1_busy_time -= 1
@@ -240,7 +240,7 @@ class subsystem1:
                         
                         if flag:
                             self.processor2_assigned_task = task
-                            self.processor2_busy_time = 2
+                            self.processor2_busy_time = weighted_round_robbin(self.Ready_queue2, self.processor2_assigned_task)
                             # Process first tick immediately
                             self.processor2_assigned_task.proceed_executed_time += 1
                             self.processor2_busy_time -= 1
@@ -320,7 +320,7 @@ class subsystem1:
                         
                         if flag:
                             self.processor3_assigned_task = task
-                            self.processor3_busy_time = 2
+                            self.processor3_busy_time = weighted_round_robbin(self.Ready_queue3, self.processor3_assigned_task)
                             # Process first tick immediately
                             self.processor3_assigned_task.proceed_executed_time += 1
                             self.processor3_busy_time -= 1
