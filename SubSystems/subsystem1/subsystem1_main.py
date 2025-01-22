@@ -85,9 +85,12 @@ class subsystem1:
         while True:
             if counter == 10:
                 break
+            # Wait for the signal
             self.subsystem1_clock.wait()
-            print('COUNTER', counter)
-            counter += 1
+            with self.lock:
+                print('Processor 1 - COUNTER:', counter)
+                counter += 1
+            # Clear the signal after processing
             self.subsystem1_clock.clear()
     
     def processor2(self):
@@ -98,15 +101,8 @@ class subsystem1:
     
     def start_subsystem(self):
         self.move_all_tasks_to_ready_queue()
-        print("!!!!!!!!!!!!!!!!!!!!!", self.subsystem1_clock.is_set())
-        processor_threads = []
-        processor1_thread = threading.Thread(target=self.processor1, args=())
-        processor_threads.append(processor1_thread)
+        processor1_thread = threading.Thread(target=self.processor1)
         processor1_thread.start()
-        processor1_thread.join()
-        # for thread in processor_threads:
-        #     thread.start()
-            
-        # for thread in processor_threads:
-        #     thread.join()    
-                
+        # Don't join here - let the thread run independently
+        return
+

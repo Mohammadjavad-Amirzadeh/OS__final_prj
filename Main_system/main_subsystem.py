@@ -27,12 +27,10 @@ def run():
     # SUB1.print_waiting_queue()
     # SUB1.print_resources_list_status()
     input('enter')
-    SUB1.set_clock()
     print('---------------------------------------------')
-    subsystem1_thread = threading.Thread(target=SUB1.start_subsystem(), args=())
+    # Fix: Remove the parentheses after start_subsystem
+    subsystem1_thread = threading.Thread(target=SUB1.start_subsystem, args=())
     subsystems_threads.append(subsystem1_thread)
-    # for sub_thread in subsystems_threads:
-    #     sub_thread.start()
     subsystem1_thread.start()
     
     for i in range(1000):
