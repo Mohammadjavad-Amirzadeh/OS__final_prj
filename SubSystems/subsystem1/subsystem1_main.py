@@ -22,6 +22,7 @@ class subsystem1:
         self.initiate_resources()
         self.add_to_waiting_queue()
         
+        self.subsystem1_clock = threading.Event()
         self.lock = threading.Lock()
         
     def initiate_resources(self):
@@ -73,17 +74,39 @@ class subsystem1:
         print("Ready Queue 3 :")
         for _, task in list(self.Ready_queue3.queue):
             print(f"Task {task.name}, Arrival Time: {task.arrival_time}, State: {task.state}")
+            
+    def set_clock(self):
+        self.subsystem1_clock.set()
+        print(self.subsystem1_clock.is_set())
+    
         
-    def processor1(sekf):
+    def processor1(self):
+        counter = 0
+        while True:
+            if counter == 10:
+                break
+            self.subsystem1_clock.wait()
+            print('COUNTER', counter)
+            counter += 1
+            self.subsystem1_clock.clear()
+    
+    def processor2(self):
         pass
     
-    def processor2():
-        pass
-    
-    def processor3():
+    def processor3(self):
         pass
     
     def start_subsystem(self):
         self.move_all_tasks_to_ready_queue()
-        
-        pass        
+        print("!!!!!!!!!!!!!!!!!!!!!", self.subsystem1_clock.is_set())
+        processor_threads = []
+        processor1_thread = threading.Thread(target=self.processor1, args=())
+        processor_threads.append(processor1_thread)
+        processor1_thread.start()
+        processor1_thread.join()
+        # for thread in processor_threads:
+        #     thread.start()
+            
+        # for thread in processor_threads:
+        #     thread.join()    
+                
