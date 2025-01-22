@@ -42,6 +42,7 @@ class subsystem1:
         self.subsystem1_clock = threading.Event()
         self.resource_lock = threading.Lock()
         self.waiting_queue_lock = threading.Lock()
+        self.current_time = -1  # Add this line to track system time
         
         
     def initiate_resources(self):
@@ -95,6 +96,7 @@ class subsystem1:
             print(f"Task {task.name}, Arrival Time: {task.arrival_time}, State: {task.state}")
             
     def set_clock(self):
+        self.current_time += 1  # Add this line to increment time
         self.processor1_status = True
         self.processor2_status = True
         self.processor3_status = True
@@ -130,20 +132,36 @@ class subsystem1:
                     time.sleep(0.1)
                     task = None
                     flag = False
-                    while len(self.Ready_queue1) > 0:
-                        task = self.Ready_queue1.pop(0)
-                        with self.resource_lock:
-                            if task.resource1_usage <= self.reamining_resource1_number and task.resource2_usage <= self.reamining_resource2_number:
-                                self.reamining_resource1_number -= task.resource1_usage
-                                self.reamining_resource2_number -= task.resource2_usage
-                                flag = True
-                                break
-                            else:
-                                self.Waiting_queue.put((task.get_remaining_execution_time(), task))
-                    if flag:
-                        self.processor1_assigned_task = task
-                        self.processor1_busy_time = 2  # This should be a parameter/variable in future
-                        if self.processor1_assigned_task:
+                    has_ready_tasks = False
+                    
+                    # First check if any tasks are ready now
+                    for task in self.Ready_queue1:
+                        if task.arrival_time <= self.current_time:
+                            has_ready_tasks = True
+                            break
+                    
+                    # Only try to process if we have ready tasks
+                    if has_ready_tasks and len(self.Ready_queue1) > 0:
+                        while len(self.Ready_queue1) > 0:
+                            task = self.Ready_queue1.pop(0)
+                            
+                            if task.arrival_time > self.current_time:
+                                self.Ready_queue1.append(task)
+                                continue
+                            
+                            with self.resource_lock:
+                                if task.resource1_usage <= self.reamining_resource1_number and task.resource2_usage <= self.reamining_resource2_number:
+                                    self.reamining_resource1_number -= task.resource1_usage
+                                    self.reamining_resource2_number -= task.resource2_usage
+                                    flag = True
+                                    break
+                                else:
+                                    self.Waiting_queue.put((task.get_remaining_execution_time(), task))
+                        
+                        if flag:
+                            self.processor1_assigned_task = task
+                            self.processor1_busy_time = 2
+                            # Process first tick immediately
                             self.processor1_assigned_task.proceed_executed_time += 1
                             self.processor1_busy_time -= 1
                             remaining_time = self.processor1_assigned_task.get_remaining_execution_time()
@@ -162,15 +180,14 @@ class subsystem1:
                                 self.Ready_queue1.append(self.processor1_assigned_task)
                                 self.processor1_assigned_task = None
                                 self.processor1_busy_time = 0
-                    else: 
-                        print("READY QUEUE FOR PROCESSOR 1 IS EMPTY")       
-                            
+                    else:
+                        print("No ready tasks for processor 1")
+                        
                 self.processor1_status = False
 
     def processor2(self):
         while True:
             if self.processor2_status:
-
                 if self.processor2_busy_time > 0:
                     if self.processor2_assigned_task:
                         self.processor2_assigned_task.proceed_executed_time += 1
@@ -191,31 +208,44 @@ class subsystem1:
                             self.Ready_queue2.append(self.processor2_assigned_task)
                             self.processor2_assigned_task = None
                             self.processor2_busy_time = 0
-                            
-                                        
-                        
                 elif self.processor2_busy_time <= 0:    
                     time.sleep(0.1)
                     task = None
                     flag = False
-                    while len(self.Ready_queue2) > 0:
-                        task = self.Ready_queue2.pop(0)
-                        with self.resource_lock:
-                            if task.resource1_usage <= self.reamining_resource1_number and task.resource2_usage <= self.reamining_resource2_number:
-                                self.reamining_resource1_number -= task.resource1_usage
-                                self.reamining_resource2_number -= task.resource2_usage
-                                flag = True
-                                break
-                            else:
-                                self.Waiting_queue.put((task.get_remaining_execution_time(), task))
-                    if flag:
-                        self.processor2_assigned_task = task
-                        self.processor2_busy_time = min(2, 2)
-                        if self.processor2_assigned_task:
+                    has_ready_tasks = False
+                    
+                    # First check if any tasks are ready now
+                    for task in self.Ready_queue2:
+                        if task.arrival_time <= self.current_time:
+                            has_ready_tasks = True
+                            break
+                    
+                    # Only try to process if we have ready tasks
+                    if has_ready_tasks and len(self.Ready_queue2) > 0:
+                        while len(self.Ready_queue2) > 0:
+                            task = self.Ready_queue2.pop(0)
+                            
+                            if task.arrival_time > self.current_time:
+                                self.Ready_queue2.append(task)
+                                continue
+                            
+                            with self.resource_lock:
+                                if task.resource1_usage <= self.reamining_resource1_number and task.resource2_usage <= self.reamining_resource2_number:
+                                    self.reamining_resource1_number -= task.resource1_usage
+                                    self.reamining_resource2_number -= task.resource2_usage
+                                    flag = True
+                                    break
+                                else:
+                                    self.Waiting_queue.put((task.get_remaining_execution_time(), task))
+                        
+                        if flag:
+                            self.processor2_assigned_task = task
+                            self.processor2_busy_time = 2
+                            # Process first tick immediately
                             self.processor2_assigned_task.proceed_executed_time += 1
                             self.processor2_busy_time -= 1
                             remaining_time = self.processor2_assigned_task.get_remaining_execution_time()
-                            if remaining_time <= 0: # task ended quantum > remaining execution time
+                            if remaining_time <= 0:
                                 with self.resource_lock:
                                     self.reamining_resource1_number += self.processor2_assigned_task.resource1_usage
                                     self.reamining_resource2_number += self.processor2_assigned_task.resource2_usage
@@ -223,16 +253,16 @@ class subsystem1:
                                 self.finished_tasks.append(self.processor2_assigned_task)
                                 self.processor2_assigned_task = None
                                 self.processor2_busy_time = 0
-                            elif self.processor2_busy_time <= 0 and remaining_time > 0: # task not end but exceeded given quantum
+                            elif self.processor2_busy_time <= 0 and remaining_time > 0:
                                 with self.resource_lock:
                                     self.reamining_resource1_number += self.processor2_assigned_task.resource1_usage
                                     self.reamining_resource2_number += self.processor2_assigned_task.resource2_usage
                                 self.Ready_queue2.append(self.processor2_assigned_task)
                                 self.processor2_assigned_task = None
                                 self.processor2_busy_time = 0
-                    else: 
-                        print("READY QUEUE FOR PROCESSOR 2 IS EMPTY")       
-                            
+                    else:
+                        print("No ready tasks for processor 2")
+                        
                 self.processor2_status = False
     
     def processor3(self):
@@ -258,25 +288,40 @@ class subsystem1:
                             self.Ready_queue3.append(self.processor3_assigned_task)
                             self.processor3_assigned_task = None
                             self.processor3_busy_time = 0
-
                 elif self.processor3_busy_time <= 0:    
                     time.sleep(0.1)
                     task = None
                     flag = False
-                    while len(self.Ready_queue3) > 0:
-                        task = self.Ready_queue3.pop(0)
-                        with self.resource_lock:
-                            if task.resource1_usage <= self.reamining_resource1_number and task.resource2_usage <= self.reamining_resource2_number:
-                                self.reamining_resource1_number -= task.resource1_usage
-                                self.reamining_resource2_number -= task.resource2_usage
-                                flag = True
-                                break
-                            else:
-                                self.Waiting_queue.put((task.get_remaining_execution_time(), task))
-                    if flag:
-                        self.processor3_assigned_task = task
-                        self.processor3_busy_time = 2  # This should be a parameter/variable in future
-                        if self.processor3_assigned_task:
+                    has_ready_tasks = False
+                    
+                    # First check if any tasks are ready now
+                    for task in self.Ready_queue3:
+                        if task.arrival_time <= self.current_time:
+                            has_ready_tasks = True
+                            break
+                    
+                    # Only try to process if we have ready tasks
+                    if has_ready_tasks and len(self.Ready_queue3) > 0:
+                        while len(self.Ready_queue3) > 0:
+                            task = self.Ready_queue3.pop(0)
+                            
+                            if task.arrival_time > self.current_time:
+                                self.Ready_queue3.append(task)
+                                continue
+                            
+                            with self.resource_lock:
+                                if task.resource1_usage <= self.reamining_resource1_number and task.resource2_usage <= self.reamining_resource2_number:
+                                    self.reamining_resource1_number -= task.resource1_usage
+                                    self.reamining_resource2_number -= task.resource2_usage
+                                    flag = True
+                                    break
+                                else:
+                                    self.Waiting_queue.put((task.get_remaining_execution_time(), task))
+                        
+                        if flag:
+                            self.processor3_assigned_task = task
+                            self.processor3_busy_time = 2
+                            # Process first tick immediately
                             self.processor3_assigned_task.proceed_executed_time += 1
                             self.processor3_busy_time -= 1
                             remaining_time = self.processor3_assigned_task.get_remaining_execution_time()
@@ -295,16 +340,16 @@ class subsystem1:
                                 self.Ready_queue3.append(self.processor3_assigned_task)
                                 self.processor3_assigned_task = None
                                 self.processor3_busy_time = 0
-                    else: 
-                        print("READY QUEUE FOR PROCESSOR 3 IS EMPTY")       
-                            
+                    else:
+                        print("No ready tasks for processor 3")
+                        
                 self.processor3_status = False
 
     def start_subsystem(self):
         self.move_all_tasks_to_ready_queue()
         processor1_thread = threading.Thread(target=self.processor1)
         processor2_thread = threading.Thread(target=self.processor2)
-        processor3_thread = threading.Thread(target=self.processor3)
+        processor3_thread = threading.Thread(target =self.processor3)
 
         processor1_thread.start()
         processor2_thread.start()

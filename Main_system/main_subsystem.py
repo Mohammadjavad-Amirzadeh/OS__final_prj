@@ -51,21 +51,41 @@ def run():
         print('SUB1: ')
         print(f'\tResources: R1: {SUB1.reamining_resource1_number}/{sub1_r1}, R2: {SUB1.reamining_resource2_number}/{sub1_r2}')
         
-        # Add waiting queue status
-        print(f'\tWaiting Queue Size: {SUB1.Waiting_queue.qsize()}')
+        # Add quantum completion status
+        print('\tProcessing Status:')
+        for core_num, (task, busy_time) in enumerate([
+            (SUB1.processor1_assigned_task, SUB1.processor1_busy_time),
+            (SUB1.processor2_assigned_task, SUB1.processor2_busy_time),
+            (SUB1.processor3_assigned_task, SUB1.processor3_busy_time)
+        ], 1):
+            if task:
+                status = "Running"
+                if busy_time == 0:
+                    if task.get_remaining_execution_time() <= 0:
+                        status = "Completed"
+                    else:
+                        status = "Quantum Expired"
+                print(f'\t\tCore {core_num}: {task} - {status} (Busy time: {busy_time})')
+            else:
+                print(f'\t\tCore {core_num}: Idle')
+
+        # Show waiting queue status
+        print('\tWaiting Queue:')
         if not SUB1.Waiting_queue.empty():
-            print('\tWaiting Tasks:')
             for _, task in list(SUB1.Waiting_queue.queue):
-                print(f'\t\t{task}')
-        
-        print(f'\tCore1: {SUB1.processor1_assigned_task if SUB1.processor1_assigned_task else "Idle"}')
-        print(f'\tCore2: {SUB1.processor2_assigned_task if SUB1.processor2_assigned_task else "Idle"}')
-        print(f'\tCore3: {SUB1.processor3_assigned_task if SUB1.processor3_assigned_task else "Idle"}')
-        
-        print(f'\tFinished Tasks: {len(SUB1.finished_tasks)}')
+                print(f'\t\t{task} - Arrival: {task.arrival_time}')
+        else:
+            print('\t\tEmpty')
+
+        # Show ready queues status
+        print('\tReady Queues:')
+        for queue_num, queue in enumerate([SUB1.Ready_queue1, SUB1.Ready_queue2, SUB1.Ready_queue3], 1):
+            print(f'\t\tQueue {queue_num}: {[task.name for task in queue] if queue else "Empty"}')
+            
+        print(f'\tFinished Tasks: {[task.name for task in SUB1.finished_tasks]}')
         
         if len(SUB1.finished_tasks) == len(sub1_tasks):
-            print("All tasks completed!")
+            print("\nAll tasks completed successfully!")
             break
             
         Time += 1
