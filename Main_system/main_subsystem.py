@@ -31,12 +31,21 @@ def run():
     # Fix: Remove the parentheses after start_subsystem
     subsystem1_thread = threading.Thread(target=SUB1.start_subsystem, args=())
     subsystems_threads.append(subsystem1_thread)
-    subsystem1_thread.start()
     
-    for i in range(1000):
-        print('yes')
-        time.sleep(0.5)
+    
+    Time = 0
+    
+    for sub_thread in subsystems_threads:
+        sub_thread.start()
+    
+    while True:
         SUB1.set_clock()
+        
+        while True:
+            if SUB1.is_processores_finished():
+                break
+            
+        Time += 1
     
     for sub_thread in subsystems_threads:
         sub_thread.join()

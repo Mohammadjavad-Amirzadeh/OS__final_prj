@@ -1,3 +1,4 @@
+import time
 import queue 
 import threading
 from SubSystems.subsystem1.subsystem1_task import subsystem1_task
@@ -22,8 +23,16 @@ class subsystem1:
         self.initiate_resources()
         self.add_to_waiting_queue()
         
+        self.processor1_status = False
+        self.processor2_status = False
+        self.processor3_status = False
+        
+        self.finished_tasks = []
+        
         self.subsystem1_clock = threading.Event()
-        self.lock = threading.Lock()
+        self.resource_lock = threading.Lock()
+        self.waiting_queue_lock = threading.Lock()
+        
         
     def initiate_resources(self):
         for resource in range(self.resource1_number):
@@ -76,33 +85,63 @@ class subsystem1:
             print(f"Task {task.name}, Arrival Time: {task.arrival_time}, State: {task.state}")
             
     def set_clock(self):
-        self.subsystem1_clock.set()
-        print(self.subsystem1_clock.is_set())
-    
+        self.processor1_status = True
+        self.processor2_status = True
+        self.processor3_status = True
         
+    def is_processores_finished(self):
+        return not(self.processor1_status) and not(self.processor2_status) and not(self.processor3_status)
+    
     def processor1(self):
         counter = 0
         while True:
-            if counter == 10:
-                break
-            # Wait for the signal
-            self.subsystem1_clock.wait()
-            with self.lock:
-                print('Processor 1 - COUNTER:', counter)
-                counter += 1
-            # Clear the signal after processing
-            self.subsystem1_clock.clear()
-    
+            # if counter == 10:
+            #     break
+            if self.processor1_status:
+                with self.resource_lock:
+                    time.sleep(5)
+                    print('Processor 1 - COUNTER:', counter)
+                    counter += 1
+                    
+                self.processor1_status = False
+            # Clear the signal after processing 
+               
     def processor2(self):
-        pass
+        counter = 0
+        while True:
+            # if counter == 10:
+            #     break
+            if self.processor2_status:
+                with self.resource_lock:
+                    time.sleep(0.3)
+                    print('Processor 2 - COUNTER:', counter)
+                    counter += 1
+                    
+                self.processor2_status = False
     
     def processor3(self):
-        pass
+        counter = 0
+        while True:
+            # if counter == 10:
+            #     break
+            if self.processor3_status:
+                with self.resource_lock:
+                    time.sleep(0.1)
+                    print('Processor 3 - COUNTER:', counter)
+                    counter += 1
+                    
+                self.processor3_status = False
     
     def start_subsystem(self):
         self.move_all_tasks_to_ready_queue()
         processor1_thread = threading.Thread(target=self.processor1)
+        processor2_thread = threading.Thread(target=self.processor2)
+        processor3_thread = threading.Thread(target=self.processor3)
+
         processor1_thread.start()
+        processor2_thread.start()
+        processor3_thread.start()
+
         # Don't join here - let the thread run independently
         return
 
