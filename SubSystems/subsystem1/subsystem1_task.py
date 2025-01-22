@@ -37,3 +37,6 @@ class subsystem1_task:
         
     def __lt__(self, other):
         return self.arrival_time < other.arrival_time
+
+    def __str__(self):
+        return f"Task {self.name} (Remaining: {self.get_remaining_execution_time()})"

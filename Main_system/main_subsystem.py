@@ -39,25 +39,35 @@ def run():
         sub_thread.start()
     
     while True:
+        print(f'\n{"="*50}')
         print('Time: ', Time)
         SUB1.set_clock()
         
         while True:
             if SUB1.is_processores_finished():
                 break
+            time.sleep(0.1)
             
         print('SUB1: ')
-        print(f'\tResources: R1: {sub1_r1}, R2: {sub1_r2}')
-        print(f'\tWaiting Queue: {SUB1.print_waiting_queue()}')
-        print(f'\tCore1:')
-        print(f'\t\tRuning Task: {SUB1.processor1_assigned_task}')
-        print(f'\t\tReady Queue: {SUB1.print_ready_queue1()}')
-        print(f'\tCore2:')
-        print(f'\t\tRuning Task: {SUB1.processor2_assigned_task}')
-        print(f'\t\tReady Queue: {SUB1.print_ready_queue2()}')
-        print(f'\tCore3:')
-        print(f'\t\tRuning Task: {SUB1.processor3_assigned_task}')
-        print(f'\t\tReady Queue: {SUB1.print_ready_queue3()}')
+        print(f'\tResources: R1: {SUB1.reamining_resource1_number}/{sub1_r1}, R2: {SUB1.reamining_resource2_number}/{sub1_r2}')
+        
+        # Add waiting queue status
+        print(f'\tWaiting Queue Size: {SUB1.Waiting_queue.qsize()}')
+        if not SUB1.Waiting_queue.empty():
+            print('\tWaiting Tasks:')
+            for _, task in list(SUB1.Waiting_queue.queue):
+                print(f'\t\t{task}')
+        
+        print(f'\tCore1: {SUB1.processor1_assigned_task if SUB1.processor1_assigned_task else "Idle"}')
+        print(f'\tCore2: {SUB1.processor2_assigned_task if SUB1.processor2_assigned_task else "Idle"}')
+        print(f'\tCore3: {SUB1.processor3_assigned_task if SUB1.processor3_assigned_task else "Idle"}')
+        
+        print(f'\tFinished Tasks: {len(SUB1.finished_tasks)}')
+        
+        if len(SUB1.finished_tasks) == len(sub1_tasks):
+            print("All tasks completed!")
+            break
+            
         Time += 1
     
     for sub_thread in subsystems_threads:

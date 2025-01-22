@@ -105,13 +105,12 @@ class subsystem1:
     def processor1(self):
         while True:
             if self.processor1_status:
-
                 if self.processor1_busy_time > 0:
                     if self.processor1_assigned_task:
                         self.processor1_assigned_task.proceed_executed_time += 1
                         self.processor1_busy_time -= 1
                         remaining_time = self.processor1_assigned_task.get_remaining_execution_time()
-                        if remaining_time <= 0: # task ended quantum > remaining execution time
+                        if remaining_time <= 0:  # task ended quantum > remaining execution time
                             with self.resource_lock:
                                 self.reamining_resource1_number += self.processor1_assigned_task.resource1_usage
                                 self.reamining_resource2_number += self.processor1_assigned_task.resource2_usage
@@ -119,16 +118,14 @@ class subsystem1:
                             self.finished_tasks.append(self.processor1_assigned_task)
                             self.processor1_assigned_task = None
                             self.processor1_busy_time = 0
-                        elif self.processor1_busy_time <= 0 and remaining_time > 0: # task not end but exceeded given quantum
+                        elif self.processor1_busy_time <= 0 and remaining_time > 0:  # task not end but exceeded given quantum
                             with self.resource_lock:
                                 self.reamining_resource1_number += self.processor1_assigned_task.resource1_usage
                                 self.reamining_resource2_number += self.processor1_assigned_task.resource2_usage
                             self.Ready_queue1.append(self.processor1_assigned_task)
                             self.processor1_assigned_task = None
                             self.processor1_busy_time = 0
-                            
-                                        
-                        
+
                 elif self.processor1_busy_time <= 0:    
                     time.sleep(0.1)
                     task = None
@@ -136,7 +133,7 @@ class subsystem1:
                     while len(self.Ready_queue1) > 0:
                         task = self.Ready_queue1.pop(0)
                         with self.resource_lock:
-                            if task.resource1_usage < self.reamining_resource1_number and task.resource2_usage < self.reamining_resource2_number:
+                            if task.resource1_usage <= self.reamining_resource1_number and task.resource2_usage <= self.reamining_resource2_number:
                                 self.reamining_resource1_number -= task.resource1_usage
                                 self.reamining_resource2_number -= task.resource2_usage
                                 flag = True
@@ -145,12 +142,12 @@ class subsystem1:
                                 self.Waiting_queue.put((task.get_remaining_execution_time(), task))
                     if flag:
                         self.processor1_assigned_task = task
-                        self.processor1_busy_time = min(2, 2)
+                        self.processor1_busy_time = 2  # This should be a parameter/variable in future
                         if self.processor1_assigned_task:
                             self.processor1_assigned_task.proceed_executed_time += 1
                             self.processor1_busy_time -= 1
                             remaining_time = self.processor1_assigned_task.get_remaining_execution_time()
-                            if remaining_time <= 0: # task ended quantum > remaining execution time
+                            if remaining_time <= 0:
                                 with self.resource_lock:
                                     self.reamining_resource1_number += self.processor1_assigned_task.resource1_usage
                                     self.reamining_resource2_number += self.processor1_assigned_task.resource2_usage
@@ -158,7 +155,7 @@ class subsystem1:
                                 self.finished_tasks.append(self.processor1_assigned_task)
                                 self.processor1_assigned_task = None
                                 self.processor1_busy_time = 0
-                            elif self.processor1_busy_time <= 0 and remaining_time > 0: # task not end but exceeded given quantum
+                            elif self.processor1_busy_time <= 0 and remaining_time > 0:
                                 with self.resource_lock:
                                     self.reamining_resource1_number += self.processor1_assigned_task.resource1_usage
                                     self.reamining_resource2_number += self.processor1_assigned_task.resource2_usage
@@ -170,7 +167,6 @@ class subsystem1:
                             
                 self.processor1_status = False
 
-               
     def processor2(self):
         while True:
             if self.processor2_status:
@@ -205,7 +201,7 @@ class subsystem1:
                     while len(self.Ready_queue2) > 0:
                         task = self.Ready_queue2.pop(0)
                         with self.resource_lock:
-                            if task.resource1_usage < self.reamining_resource1_number and task.resource2_usage < self.reamining_resource2_number:
+                            if task.resource1_usage <= self.reamining_resource1_number and task.resource2_usage <= self.reamining_resource2_number:
                                 self.reamining_resource1_number -= task.resource1_usage
                                 self.reamining_resource2_number -= task.resource2_usage
                                 flag = True
@@ -242,13 +238,12 @@ class subsystem1:
     def processor3(self):
         while True:
             if self.processor3_status:
-
                 if self.processor3_busy_time > 0:
                     if self.processor3_assigned_task:
                         self.processor3_assigned_task.proceed_executed_time += 1
                         self.processor3_busy_time -= 1
                         remaining_time = self.processor3_assigned_task.get_remaining_execution_time()
-                        if remaining_time <= 0: # task ended quantum > remaining execution time
+                        if remaining_time <= 0:  # task ended quantum > remaining execution time
                             with self.resource_lock:
                                 self.reamining_resource1_number += self.processor3_assigned_task.resource1_usage
                                 self.reamining_resource2_number += self.processor3_assigned_task.resource2_usage
@@ -256,16 +251,14 @@ class subsystem1:
                             self.finished_tasks.append(self.processor3_assigned_task)
                             self.processor3_assigned_task = None
                             self.processor3_busy_time = 0
-                        elif self.processor3_busy_time <= 0 and remaining_time > 0: # task not end but exceeded given quantum
+                        elif self.processor3_busy_time <= 0 and remaining_time > 0:  # task not end but exceeded given quantum
                             with self.resource_lock:
                                 self.reamining_resource1_number += self.processor3_assigned_task.resource1_usage
                                 self.reamining_resource2_number += self.processor3_assigned_task.resource2_usage
                             self.Ready_queue3.append(self.processor3_assigned_task)
                             self.processor3_assigned_task = None
                             self.processor3_busy_time = 0
-                            
-                                        
-                        
+
                 elif self.processor3_busy_time <= 0:    
                     time.sleep(0.1)
                     task = None
@@ -273,7 +266,7 @@ class subsystem1:
                     while len(self.Ready_queue3) > 0:
                         task = self.Ready_queue3.pop(0)
                         with self.resource_lock:
-                            if task.resource1_usage < self.reamining_resource1_number and task.resource2_usage < self.reamining_resource2_number:
+                            if task.resource1_usage <= self.reamining_resource1_number and task.resource2_usage <= self.reamining_resource2_number:
                                 self.reamining_resource1_number -= task.resource1_usage
                                 self.reamining_resource2_number -= task.resource2_usage
                                 flag = True
@@ -282,12 +275,12 @@ class subsystem1:
                                 self.Waiting_queue.put((task.get_remaining_execution_time(), task))
                     if flag:
                         self.processor3_assigned_task = task
-                        self.processor3_busy_time = min(2, 2)
+                        self.processor3_busy_time = 2  # This should be a parameter/variable in future
                         if self.processor3_assigned_task:
                             self.processor3_assigned_task.proceed_executed_time += 1
                             self.processor3_busy_time -= 1
                             remaining_time = self.processor3_assigned_task.get_remaining_execution_time()
-                            if remaining_time <= 0: # task ended quantum > remaining execution time
+                            if remaining_time <= 0:
                                 with self.resource_lock:
                                     self.reamining_resource1_number += self.processor3_assigned_task.resource1_usage
                                     self.reamining_resource2_number += self.processor3_assigned_task.resource2_usage
@@ -295,7 +288,7 @@ class subsystem1:
                                 self.finished_tasks.append(self.processor3_assigned_task)
                                 self.processor3_assigned_task = None
                                 self.processor3_busy_time = 0
-                            elif self.processor3_busy_time <= 0 and remaining_time > 0: # task not end but exceeded given quantum
+                            elif self.processor3_busy_time <= 0 and remaining_time > 0:
                                 with self.resource_lock:
                                     self.reamining_resource1_number += self.processor3_assigned_task.resource1_usage
                                     self.reamining_resource2_number += self.processor3_assigned_task.resource2_usage
