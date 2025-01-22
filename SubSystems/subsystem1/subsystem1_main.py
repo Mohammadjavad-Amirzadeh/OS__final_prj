@@ -5,6 +5,7 @@ from SubSystems.subsystem1.subsystem1_task import subsystem1_task
 from Resources.Resource1 import resource1
 from Resources.Resource2 import resource2
 from SubSystems.subsystem1.subsystem1_scheduler import weighted_round_robbin
+from SubSystems.subsystem1.long_term import long_term_schedular
 
 
 class subsystem1:
@@ -156,7 +157,8 @@ class subsystem1:
                                     flag = True
                                     break
                                 else:
-                                    self.Waiting_queue.put((task.get_remaining_execution_time(), task))
+                                    with self.waiting_queue_lock:
+                                        self.Waiting_queue.put((task.get_remaining_execution_time(), task))
                         
                         if flag:
                             self.processor1_assigned_task = task
@@ -181,7 +183,21 @@ class subsystem1:
                                 self.processor1_assigned_task = None
                                 self.processor1_busy_time = 0
                     else:
-                        print("No ready tasks for processor 1")
+                        with self.waiting_queue_lock and self.resource_lock:
+                            self.Waiting_queue, self.Ready_queue1, self.Ready_queue2, self.Ready_queue3 = long_term_schedular(
+                                self.Waiting_queue, 
+                                self.Ready_queue1, 
+                                self.Ready_queue2, 
+                                self.Ready_queue3, 
+                                self.reamining_resource1_number, 
+                                self.reamining_resource2_number,
+                                self.current_time
+                            )
+                        if len(self.Ready_queue1) == 0:
+                            print("No ready tasks for processor 1")
+                        else:
+                            print('Ready Queue 1 Updated')
+                        
                         
                 self.processor1_status = False
 
@@ -236,7 +252,8 @@ class subsystem1:
                                     flag = True
                                     break
                                 else:
-                                    self.Waiting_queue.put((task.get_remaining_execution_time(), task))
+                                    with self.waiting_queue_lock:
+                                        self.Waiting_queue.put((task.get_remaining_execution_time(), task))
                         
                         if flag:
                             self.processor2_assigned_task = task
@@ -261,7 +278,20 @@ class subsystem1:
                                 self.processor2_assigned_task = None
                                 self.processor2_busy_time = 0
                     else:
-                        print("No ready tasks for processor 2")
+                        with self.waiting_queue_lock and self.resource_lock:
+                            self.Waiting_queue, self.Ready_queue1, self.Ready_queue2, self.Ready_queue3 = long_term_schedular(
+                                self.Waiting_queue, 
+                                self.Ready_queue1, 
+                                self.Ready_queue2, 
+                                self.Ready_queue3, 
+                                self.reamining_resource1_number, 
+                                self.reamining_resource2_number,
+                                self.current_time
+                            )
+                        if len(self.Ready_queue2) == 0:
+                            print("No ready tasks for processor 2")
+                        else:
+                            print('Ready Queue 2 Updated')
                         
                 self.processor2_status = False
     
@@ -316,7 +346,8 @@ class subsystem1:
                                     flag = True
                                     break
                                 else:
-                                    self.Waiting_queue.put((task.get_remaining_execution_time(), task))
+                                    with self.waiting_queue_lock:
+                                        self.Waiting_queue.put((task.get_remaining_execution_time(), task))
                         
                         if flag:
                             self.processor3_assigned_task = task
@@ -341,7 +372,20 @@ class subsystem1:
                                 self.processor3_assigned_task = None
                                 self.processor3_busy_time = 0
                     else:
-                        print("No ready tasks for processor 3")
+                        with self.waiting_queue_lock and self.resource_lock:
+                            self.Waiting_queue, self.Ready_queue1, self.Ready_queue2, self.Ready_queue3 = long_term_schedular(
+                                self.Waiting_queue, 
+                                self.Ready_queue1, 
+                                self.Ready_queue2, 
+                                self.Ready_queue3, 
+                                self.reamining_resource1_number, 
+                                self.reamining_resource2_number,
+                                self.current_time
+                            )
+                        if len(self.Ready_queue3) == 0:
+                            print("No ready tasks for processor 3")
+                        else:
+                            print('Ready Queue 3 Updated')
                         
                 self.processor3_status = False
 
