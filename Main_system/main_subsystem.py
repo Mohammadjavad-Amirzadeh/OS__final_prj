@@ -39,12 +39,25 @@ def run():
         sub_thread.start()
     
     while True:
+        print('Time: ', Time)
         SUB1.set_clock()
         
         while True:
             if SUB1.is_processores_finished():
                 break
             
+        print('SUB1: ')
+        print(f'\tResources: R1: {sub1_r1}, R2: {sub1_r2}')
+        print(f'\tWaiting Queue: {SUB1.print_waiting_queue()}')
+        print(f'\tCore1:')
+        print(f'\t\tRuning Task: {SUB1.processor1_assigned_task}')
+        print(f'\t\tReady Queue: {SUB1.print_ready_queue1()}')
+        print(f'\tCore2:')
+        print(f'\t\tRuning Task: {SUB1.processor2_assigned_task}')
+        print(f'\t\tReady Queue: {SUB1.print_ready_queue2()}')
+        print(f'\tCore3:')
+        print(f'\t\tRuning Task: {SUB1.processor3_assigned_task}')
+        print(f'\t\tReady Queue: {SUB1.print_ready_queue3()}')
         Time += 1
     
     for sub_thread in subsystems_threads:
