@@ -8,3 +8,18 @@ class subsystem3_task:
         self.period = period
         self.repetitions_number = repetitions_number
         self.state = 'Waiting'
+        self.speedup_needed = False  # Track if task needs speedup
+        self.proceed_executed_time = 0
+        self.next_deadline = arrival_time + period
+        
+    def get_remaining_execution_time(self):
+        return self.execution_time - self.proceed_executed_time
+
+    def update_deadline(self, current_time):
+        if current_time >= self.next_deadline:
+            self.next_deadline += self.period
+            return True
+        return False
+
+    def __str__(self):
+        return f"Task {self.name} (Remaining: {self.get_remaining_execution_time()}, Next deadline: {self.next_deadline})"

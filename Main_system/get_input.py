@@ -48,22 +48,27 @@ def get_input():
     
     print('-----------------------------------')
     print('Enter Sub System3 Tasks')
+    print('Format: name execution_time r1_usage r2_usage arrival period repetitions')
     sub3_tasks = []
     while True:
-        temp = input()
-        if temp == '$':
+        line = input()
+        if line == '$':
             break
-        else:
-            task = temp.split()
-            task_dict = {
-                'name': task[0],
-                'execution_time': int(task[1]),
-                'resource1_usage': int(task[2]),
-                'resource2_usage': int(task[3]),
-                'arrival_time': int(task[4]), 
-                'period': int(task[5])
-            }
-            sub3_tasks.append(task_dict)
+        try:
+            name, exec_time, r1_usage, r2_usage, arrival, period, reps = line.split()
+            sub3_tasks.append({
+                'name': name,
+                'execution_time': int(exec_time),
+                'resource1_usage': int(r1_usage),
+                'resource2_usage': int(r2_usage),
+                'arrival_time': int(arrival),
+                'period': int(period),
+                'repetitions_number': int(reps)
+            })
+        except ValueError as e:
+            print(f"Error: Invalid input format. Expected: name exec_time r1 r2 arrival period repetitions")
+            print(f"Got: {line}")
+            continue
     # print(f'SUB SYSTEM 3 TASKS : {sub2_tasks}')
     print()
     
