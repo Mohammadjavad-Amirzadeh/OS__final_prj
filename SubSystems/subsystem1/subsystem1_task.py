@@ -15,6 +15,7 @@ class subsystem1_task:
         # self.using_resource2_number = 0 # number of resource two reached
         # self.using_resource1_list = []  # list of resource one reached
         # self.using_resource2_list = []  # list of resource one reached
+        self.assigned_quantum = 0
         self.proceed_executed_time = 0
         self.remaining_execution_time = self.execution_time - self.proceed_executed_time
         
