@@ -29,39 +29,39 @@ def run():
         sub1_tasks.append(temp_task)
     
     # Initialize subsystem 2
-    sub2_tasks = []
-    for task in sub2_tasks_dict:
-        temp_task = subsystem2_task(task['name'], task['execution_time'],
-                                  task['resource1_usage'], task['resource2_usage'],
-                                  task['arrival_time'])
-        sub2_tasks.append(temp_task)
+    # sub2_tasks = []
+    # for task in sub2_tasks_dict:
+    #     temp_task = subsystem2_task(task['name'], task['execution_time'],
+    #                               task['resource1_usage'], task['resource2_usage'],
+    #                               task['arrival_time'])
+    #     sub2_tasks.append(temp_task)
     
-    # Initialize subsystem 3
-    sub3_tasks = []
-    for task in sub3_tasks_dict:
-        temp_task = subsystem3_task(task['name'], task['execution_time'],
-                                  task['resource1_usage'], task['resource2_usage'],
-                                  task['arrival_time'], task['period'],
-                                  task['repetitions_number'])
-        sub3_tasks.append(temp_task)
+    # # Initialize subsystem 3
+    # sub3_tasks = []
+    # for task in sub3_tasks_dict:
+    #     temp_task = subsystem3_task(task['name'], task['execution_time'],
+    #                               task['resource1_usage'], task['resource2_usage'],
+    #                               task['arrival_time'], task['period'],
+    #                               task['repetitions_number'])
+    #     sub3_tasks.append(temp_task)
     
     SUB1 = subsystem1(sub1_tasks, sub1_r1, sub1_r2)
-    SUB2 = subsystem2(sub2_tasks, sub2_r1, sub2_r2)
-    SUB3 = subsystem3(sub3_tasks)
+    # SUB2 = subsystem2(sub2_tasks, sub2_r1, sub2_r2)
+    # SUB3 = subsystem3(sub3_tasks)
     
     print("Subsystem 1 Initial State:")
     SUB1.print_waiting_queue()
-    print("\nSubsystem 3 Initial State:")
-    print(f"Real-time tasks to schedule: {len(sub3_tasks)}")
+    # print("\nSubsystem 3 Initial State:")
+    # print(f"Real-time tasks to schedule: {len(sub3_tasks)}")
     
     input('Press Enter to start...')
     print('---------------------------------------------')
     
     subsystem1_thread = threading.Thread(target=SUB1.start_subsystem, args=())
-    subsystem2_thread = threading.Thread(target=SUB2.start_subsystem, args=())
-    subsystem3_thread = threading.Thread(target=SUB3.start_subsystem, args=())
+    # subsystem2_thread = threading.Thread(target=SUB2.start_subsystem, args=())
+    # subsystem3_thread = threading.Thread(target=SUB3.start_subsystem, args=())
     
-    subsystems_threads.extend([subsystem1_thread, subsystem2_thread, subsystem3_thread])
+    subsystems_threads.extend([subsystem1_thread])
     
     Time = 0
     for sub_thread in subsystems_threads:
@@ -77,33 +77,35 @@ def run():
             'core2': None,  
             'core3': None
         }
-        SUB3.quantum_task = None
+        # SUB3.quantum_task = None
         
         SUB1.set_clock()
-        SUB2.set_clock()
-        SUB3.set_clock()
+        # SUB2.set_clock()
+        # SUB3.set_clock()
         
         while True:
-            if (SUB1.is_processores_finished() and 
-                SUB2.is_processor_finished() and 
-                SUB3.is_processor_finished()):
+            if (SUB1.is_processores_finished()):
                 break
             time.sleep(0.1)
             
         print('SUB1: ')
         print(f'\tResources: R1: {SUB1.reamining_resource1_number}/{sub1_r1}, R2: {SUB1.reamining_resource2_number}/{sub1_r2}')
         
-        print('\tProcessing Status:')
-        for core_num, (current_task, busy_time, quantum_task) in enumerate([
-            (SUB1.processor1_assigned_task, SUB1.processor1_busy_time, SUB1.quantum_tasks['core1']),
-            (SUB1.processor2_assigned_task, SUB1.processor2_busy_time, SUB1.quantum_tasks['core2']),
-            (SUB1.processor3_assigned_task, SUB1.processor3_busy_time, SUB1.quantum_tasks['core3'])
-        ], 1):
-            if quantum_task:
-                status = 'Running' if current_task else 'Completed'
-                print(f'\t\tCore {core_num}: Task {quantum_task.name} - {status} (Busy time: {busy_time})')
-            else:
-                print(f'\t\tCore {core_num}: No task processed (Busy time: {busy_time})')
+        # print('\tProcessing Status:')
+        # for core_num, (current_task, busy_time, quantum_task) in enumerate([
+        #     (SUB1.processor1_assigned_task, SUB1.processor1_busy_time, SUB1.quantum_tasks['core1']),
+        #     (SUB1.processor2_assigned_task, SUB1.processor2_busy_time, SUB1.quantum_tasks['core2']),
+        #     (SUB1.processor3_assigned_task, SUB1.processor3_busy_time, SUB1.quantum_tasks['core3'])
+        # ], 1):
+        #     if quantum_task:
+        #         status = 'Running' if current_task else 'Completed'
+        #         print(f'\t\tCore {core_num}: Task {quantum_task.name} - {status} (Busy time: {busy_time})')
+        #     else:
+        #         print(f'\t\tCore {core_num}: No task processed (Busy time: {busy_time})')
+        
+        print('\tWhat Cores did')
+        for core in SUB1.subsystem_did:
+            print(f'\t\t{core} did :{SUB1.subsystem_did[core]}')
         
         # Show waiting queue status
         print('\tWaiting Queue:')
@@ -121,55 +123,56 @@ def run():
         print(f'\tFinished Tasks: {[task.name for task in SUB1.finished_tasks]}')
         
         # Print Subsystem 2 status
-        print('\nSUB2:')
-        print(f'\tResources: R1: {SUB2.reamining_resource1_number}/{sub2_r1}, R2: {SUB2.reamining_resource2_number}/{sub2_r2}')
+        # print('\nSUB2:')
+        # print(f'\tResources: R1: {SUB2.reamining_resource1_number}/{sub2_r1}, R2: {SUB2.reamining_resource2_number}/{sub2_r2}')
         
-        print('\tProcessing Status:')
-        for core_num, (current_task, busy_time) in enumerate([
-            (SUB2.processor1_assigned_task, SUB2.processor1_busy_time),
-            (SUB2.processor2_assigned_task, SUB2.processor2_busy_time)
-        ], 1):
-            if current_task:
-                print(f'\t\tCore {core_num}: Task {current_task.name} - Running (Busy time: {busy_time})')
-            else:
-                print(f'\t\tCore {core_num}: No task processed (Busy time: {busy_time})')
+        # print('\tProcessing Status:')
+        # for core_num, (current_task, busy_time) in enumerate([
+        #     (SUB2.processor1_assigned_task, SUB2.processor1_busy_time),
+        #     (SUB2.processor2_assigned_task, SUB2.processor2_busy_time)
+        # ], 1):
+        #     if current_task:
+        #         print(f'\t\tCore {core_num}: Task {current_task.name} - Running (Busy time: {busy_time})')
+        #     else:
+        #         print(f'\t\tCore {core_num}: No task processed (Busy time: {busy_time})')
 
-        # Show ready queue status
-        print('\tReady Queue:')
-        if not SUB2.Ready_queue.empty():
-            ready_tasks = list(SUB2.Ready_queue.queue)
-            print(f'\t\tTasks: {[task[1].name for task in ready_tasks]}')
-        else:
-            print('\t\tEmpty')
+        # # Show ready queue status
+        # print('\tReady Queue:')
+        # if not SUB2.Ready_queue.empty():
+        #     ready_tasks = list(SUB2.Ready_queue.queue)
+        #     print(f'\t\tTasks: {[task[1].name for task in ready_tasks]}')
+        # else:
+        #     print('\t\tEmpty')
             
-        print(f'\tFinished/Aborted Tasks: {[task.name for task in SUB2.finished_and_aborted_tasks]}')
+        # print(f'\tFinished/Aborted Tasks: {[task.name for task in SUB2.finished_and_aborted_tasks]}')
 
         # Print Subsystem 3 status
-        print('\nSUB3 (Real-time):')
-        status_line = None
-        if SUB3.processor_assigned_task:
-            if SUB3.processor_busy_time > 0:
-                status_line = f'\tTask {SUB3.processor_assigned_task.name} - Running (Busy time: {SUB3.processor_busy_time})'
-            else:
-                status_line = f'\tTask {SUB3.processor_assigned_task.name} - Completed (Busy time: {SUB3.processor_busy_time})'
-        elif SUB3.quantum_task:
-            status_line = f'\tTask {SUB3.quantum_task.name} - Processing (Busy time: {SUB3.processor_busy_time})'
-        else:
-            if len(SUB3.Ready_queue) == 0 and len(SUB3.waiting_arrivals) == 0:
-                status_line = f'\tNo tasks available'
-            else:
-                status_line = f'\tWaiting for next task (Busy time: {SUB3.processor_busy_time})'
-        print(status_line)
+        # print('\nSUB3 (Real-time):')
+        # status_line = None
+        # if SUB3.processor_assigned_task:
+        #     if SUB3.processor_busy_time > 0:
+        #         status_line = f'\tTask {SUB3.processor_assigned_task.name} - Running (Busy time: {SUB3.processor_busy_time})'
+        #     else:
+        #         status_line = f'\tTask {SUB3.processor_assigned_task.name} - Completed (Busy time: {SUB3.processor_busy_time})'
+        # elif SUB3.quantum_task:
+        #     status_line = f'\tTask {SUB3.quantum_task.name} - Processing (Busy time: {SUB3.processor_busy_time})'
+        # else:
+        #     if len(SUB3.Ready_queue) == 0 and len(SUB3.waiting_arrivals) == 0:
+        #         status_line = f'\tNo tasks available'
+        #     else:
+        #         status_line = f'\tWaiting for next task (Busy time: {SUB3.processor_busy_time})'
+        # print(status_line)
 
-        print(f'\tWaiting Arrivals: {[task.name for task in SUB3.waiting_arrivals]}')
-        print(f'\tReady Queue: {[task.name for task in SUB3.Ready_queue]}')
-        if SUB3.missed_deadlines > 0:
-            print(f'\tMissed Deadlines: {SUB3.missed_deadlines}')
-        print(f'\tCompleted Periods: {SUB3.completed_periods}')
+        # print(f'\tWaiting Arrivals: {[task.name for task in SUB3.waiting_arrivals]}')
+        # print(f'\tReady Queue: {[task.name for task in SUB3.Ready_queue]}')
+        # if SUB3.missed_deadlines > 0:
+        #     print(f'\tMissed Deadlines: {SUB3.missed_deadlines}')
+        # print(f'\tCompleted Periods: {SUB3.completed_periods}')
         
-        if (len(SUB1.finished_tasks) == len(sub1_tasks) and
-            len(SUB2.finished_and_aborted_tasks) == len(sub2_tasks) and
-            all(task.repetitions_number <= 0 for task in SUB3.Ready_queue)):
+        if (len(SUB1.finished_tasks) == len(sub1_tasks) 
+            # len(SUB2.finished_and_aborted_tasks) == len(sub2_tasks)
+            # all(task.repetitions_number <= 0 for task in SUB3.Ready_queue)
+            ):
             print("\nAll tasks completed successfully!")
             break
             
