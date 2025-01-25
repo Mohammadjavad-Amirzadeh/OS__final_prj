@@ -1,0 +1,80 @@
+{
+    "tasks": {
+        "T11": {
+            "subsystem": "subsystem1",
+            "arrival_time": 1,
+            "finish_time": 5,
+            "total_execution_time": 4,
+            "completed_by_core": "subsystem1_core1",
+            "waiting_time": 1
+        },
+        "T12": {
+            "subsystem": "subsystem1",
+            "arrival_time": 2,
+            "finish_time": 14,
+            "total_execution_time": 7,
+            "completed_by_core": "subsystem1_core2",
+            "waiting_time": 6
+        },
+        "T13": {
+            "subsystem": "subsystem1",
+            "arrival_time": 2,
+            "finish_time": 13,
+            "total_execution_time": 6,
+            "completed_by_core": "subsystem1_core2",
+            "waiting_time": 6
+        },
+        "T14": {
+            "subsystem": "subsystem1",
+            "arrival_time": 1,
+            "finish_time": 3,
+            "total_execution_time": 3,
+            "completed_by_core": "subsystem1_core3",
+            "waiting_time": 0
+        },
+        "T15": {
+            "subsystem": "subsystem1",
+            "arrival_time": 3,
+            "finish_time": 12,
+            "total_execution_time": 4,
+            "completed_by_core": "subsystem1_core3",
+            "waiting_time": 6
+        },
+        "T21": {
+            "subsystem": "subsystem2",
+            "arrival_time": 3,
+            "finish_time": 6,
+            "total_execution_time": 4,
+            "completed_by_core": "subsystem2_core1",
+            "waiting_time": 0
+        },
+        "T31": {
+            "subsystem": "subsystem3",
+            "arrival_time": 0,
+            "finish_time": 5,
+            "total_execution_time": 2,
+            "completed_by_core": "subsystem3_core1",
+            "waiting_time": 4
+        },
+        "T41": {
+            "subsystem": "subsystem4",
+            "arrival_time": 1,
+            "finish_time": 7,
+            "total_execution_time": 2,
+            "completed_by_core": "subsystem4_core2",
+            "waiting_time": 5
+        },
+        "T42": {
+            "subsystem": "subsystem4",
+            "arrival_time": 3,
+            "finish_time": 6,
+            "total_execution_time": 4,
+            "completed_by_core": "subsystem4_core1",
+            "waiting_time": 0
+        }
+    },
+    "metadata": {
+        "generation_time": "2025-01-25 19:24:18",
+        "total_tasks": 9
+    }
+}

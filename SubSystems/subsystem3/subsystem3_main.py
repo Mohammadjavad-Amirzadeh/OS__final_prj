@@ -187,6 +187,11 @@ class subsystem3:
                                 self.waiting_arrivals.insert(insert_idx, task)
                                 print(f"Task {task.name} scheduled for next arrival at {task.arrival_time}")
                             else:
+                                if self.processor_assigned_task.repetitions_number <= 0:
+                                    self.main_system.execution_tracker.task_finished(self.processor_assigned_task.name, 
+                                                                                   self.current_time,
+                                                                                   self.processor_assigned_task.proceed_executed_time,
+                                                                                   "subsystem3_core1")  # Add core name
                                 if self.processor_assigned_task.speedup_needed:
                                     print("Releasing speedup resources")
                                     self.main_system.release_resources(self.processor_assigned_task.speedup_resources)

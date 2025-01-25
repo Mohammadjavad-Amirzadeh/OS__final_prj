@@ -6,7 +6,10 @@ from SubSystems.subsystem3.subsystem3_task import subsystem3_task
 from SubSystems.subsystem3.subsystem3_main import subsystem3
 from SubSystems.subsystem2.subsystem2_task import subsystem2_task
 from SubSystems.subsystem2.subsystem2_main import subsystem2
+from SubSystems.subsystem4.subsystem4_task import subsystem4_task
+from SubSystems.subsystem4.subsystem4_main import subsystem4
 import time
+from Reports.execution_tracker import ExecutionTracker
 
 class main_subsystem:
         
@@ -44,8 +47,11 @@ class main_subsystem:
                 
 
     def run(self):
+        self.execution_tracker = ExecutionTracker()
         subsystems_threads = []
-        sub1_tasks_dict, sub2_tasks_dict, sub3_tasks_dict, sub1_r1, sub1_r2, sub2_r1, sub2_r2, sub3_r1, sub3_r2 = get_input()
+        # Update get_input() call to include sub4 params
+        (sub1_tasks_dict, sub2_tasks_dict, sub3_tasks_dict, sub4_tasks_dict,
+         sub1_r1, sub1_r2, sub2_r1, sub2_r2, sub3_r1, sub3_r2, sub4_r1, sub4_r2) = get_input()
         
         # Initialize subsystem 1
         sub1_tasks = []
@@ -72,19 +78,40 @@ class main_subsystem:
                                     task['repetitions_number'])
             sub3_tasks.append(temp_task)
         
-        SUB1 = subsystem1(sub1_tasks, sub1_r1, sub1_r2)
-        SUB2 = subsystem2(sub2_tasks, sub2_r1, sub2_r2)
+        # Initialize subsystem 4
+        sub4_tasks = []
+        for task in sub4_tasks_dict:
+            temp_task = subsystem4_task(task['name'], task['execution_time'],
+                                    task['resource1_usage'], task['resource2_usage'],
+                                    task['arrival_time'], task['prerequisite_task'])
+            sub4_tasks.append(temp_task)
+
+        for task in sub1_tasks:
+            self.execution_tracker.add_task(task.name, task.arrival_time, "subsystem1")
+        for task in sub2_tasks:
+            self.execution_tracker.add_task(task.name, task.arrival_time, "subsystem2")
+        for task in sub3_tasks:
+            self.execution_tracker.add_task(task.name, task.arrival_time, "subsystem3")
+        for task in sub4_tasks:
+            self.execution_tracker.add_task(task.name, task.arrival_time, "subsystem4")
+
+        SUB1 = subsystem1(sub1_tasks, sub1_r1, sub1_r2, self)
+        SUB2 = subsystem2(sub2_tasks, sub2_r1, sub2_r2, self)
         SUB3 = subsystem3(sub3_tasks, sub3_r1, sub3_r2, self)  # Pass self reference
+        SUB4 = subsystem4(sub4_tasks, sub4_r1, sub4_r2, self)
 
         self.SUB1 = SUB1
         self.SUB2 = SUB2
         self.SUB3 = SUB3
+        self.SUB4 = SUB4
 
         
         print("Subsystem 1 Initial State:")
         SUB1.print_waiting_queue()
         print("\nSubsystem 3 Initial State:")  # Uncomment this
         print(f"Real-time tasks to schedule: {len(sub3_tasks)}")  # Uncomment this
+        print("\nSubsystem 4 Initial State:")
+        print(f"Tasks to schedule with prerequisites: {len(sub4_tasks)}")
         
         input('Press Enter to start...')
         print('---------------------------------------------')
@@ -92,17 +119,18 @@ class main_subsystem:
         subsystem1_thread = threading.Thread(target=SUB1.start_subsystem, args=())
         subsystem2_thread = threading.Thread(target=SUB2.start_subsystem, args=())
         subsystem3_thread = threading.Thread(target=SUB3.start_subsystem)  # Uncomment this
-        
-        subsystems_threads.extend([subsystem1_thread, subsystem2_thread, subsystem3_thread])  # Add subsystem3_thread
+        subsystem4_thread = threading.Thread(target=SUB4.start_subsystem)
+
+        subsystems_threads.extend([subsystem1_thread, subsystem2_thread, subsystem3_thread, subsystem4_thread])  # Add subsystem3_thread
         
         Time = 0
         for sub_thread in subsystems_threads:
             sub_thread.start()
         
         while True:
-            print(f'\n{"="*50}')
+            print(f'\n{"="*100}')
             print('Time: ', Time)
-            
+            print('during processing')
             # Reset quantum status tracking
             SUB1.quantum_tasks = {
                 'core1': None,
@@ -114,14 +142,17 @@ class main_subsystem:
             SUB1.set_clock()
             SUB2.set_clock()
             SUB3.set_clock()  # Uncomment this
+            SUB4.set_clock()
             
             while True:
                 if (SUB1.is_processores_finished() and 
                     SUB2.is_processores_finished() and
-                    SUB3.is_processor_finished()):  # Add SUB3 check
+                    SUB3.is_processor_finished() and
+                    SUB4.is_processores_finished()):
                     break
-                time.sleep(0.1)
-                
+                # time.sleep(0.1)
+            print(f'\n{"-"*50}')
+            print('after all subsystems finished')
             print('SUB1: ')
             print(f'\tResources: R1: {SUB1.reamining_resource1_number}/{sub1_r1}, R2: {SUB1.reamining_resource2_number}/{sub1_r2}')
             
@@ -212,11 +243,25 @@ class main_subsystem:
             print(f'\tFinished Tasks: {[task.name for task in SUB3.finished_tasks]}')
             print(f'\tRejected Tasks: {[task.name for task in SUB3.rejected_tasks]}')
 
+            # Add SUB4 status display
+            print('\nSUB4:')
+            print(f'\tResources: R1: {SUB4.reamining_resource1_number}/{sub4_r1}, R2: {SUB4.reamining_resource2_number}/{sub4_r2}')
+            
+            print('\tWhat Cores did')
+            for core in SUB4.subsystem_did:
+                print(f'\t\t{core} did: {SUB4.subsystem_did[core]}')
+            
+            print('\tWaiting Queue:', len(SUB4.Waiting_queue))
+            print('\tReady Queue:', len(SUB4.Ready_queue))
+            print(f'\tFinished Tasks: {[task.name for task in SUB4.finished_tasks if task]}')
+
             # Update completion check
             if (len(SUB1.finished_tasks) == len(sub1_tasks) and
                 len(SUB2.finished_and_aborted_tasks) == len(sub2_tasks) and
-                len(SUB3.finished_tasks) +len(SUB3.rejected_tasks) == len(sub3_tasks)):
+                len(SUB3.finished_tasks) + len(SUB3.rejected_tasks) == len(sub3_tasks) and
+                len([t for t in SUB4.finished_tasks if t]) == len(sub4_tasks)):
                 print("\nAll tasks completed successfully!")
+                self.execution_tracker.save_report()
                 break
             
             Time += 1

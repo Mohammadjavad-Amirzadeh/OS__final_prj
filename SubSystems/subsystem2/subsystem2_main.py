@@ -5,7 +5,7 @@ from Resources.Resource1 import resource1
 from Resources.Resource2 import resource2
 
 class subsystem2:
-    def __init__(self, subsystem2_tasks, resource1_number, resource2_number):
+    def __init__(self, subsystem2_tasks, resource1_number, resource2_number, main_system=None):
         self.subsystem_number = 2
         self.processors_count = 2
         self.tasks = subsystem2_tasks
@@ -43,7 +43,7 @@ class subsystem2:
         
         self.subsystem_did = {'processor1': 'IDLE',
                               'processor2': 'IDLE'}
-        
+        self.main_system = main_system
         
         
     def initiate_resources(self):
@@ -72,8 +72,8 @@ class subsystem2:
                     self.Ready_queue.put((task.get_remaining_execution_time(), task))
             else:
                 self.storing_all_tasks.put((arrival, task))
-        for _, task in list(self.Ready_queue.queue):
-            print(task.name)
+        # for _, task in list(self.Ready_queue.queue):
+        #     print(task.name)
         
     def check_shorter_task(self, task):
         if self.Ready_queue.empty():
@@ -132,6 +132,10 @@ class subsystem2:
                                     with self.resource_lock:
                                         self.reamining_resource1_number += self.processor1_assigned_task.resource1_usage
                                         self.reamining_resource2_number += self.processor1_assigned_task.resource2_usage
+                                    self.main_system.execution_tracker.task_finished(self.processor1_assigned_task.name, 
+                                                                                     self.current_time,
+                                                                                     self.processor1_assigned_task.proceed_executed_time,
+                                                                                     "subsystem2_core1")  # Add core name
                                     self.finished_and_aborted_tasks.append(self.processor1_assigned_task)
                                     self.processor1_assigned_task = None
                                     self.processor1_busy_time = 0 
@@ -147,6 +151,10 @@ class subsystem2:
                                 with self.resource_lock:
                                     self.reamining_resource1_number += self.processor1_assigned_task.resource1_usage
                                     self.reamining_resource2_number += self.processor1_assigned_task.resource2_usage
+                                self.main_system.execution_tracker.task_finished(self.processor1_assigned_task.name, 
+                                                                                 self.current_time,
+                                                                                 self.processor1_assigned_task.proceed_executed_time,
+                                                                                 "subsystem2_core1")  # Add core name
                                 self.finished_and_aborted_tasks.append(self.processor1_assigned_task)
                                 self.processor1_assigned_task = None
                                 self.processor1_busy_time = 0  
@@ -182,6 +190,10 @@ class subsystem2:
                                 with self.resource_lock:
                                     self.reamining_resource1_number += self.processor1_assigned_task.resource1_usage
                                     self.reamining_resource2_number += self.processor1_assigned_task.resource2_usage
+                                self.main_system.execution_tracker.task_finished(self.processor1_assigned_task.name, 
+                                                                                 self.current_time,
+                                                                                 self.processor1_assigned_task.proceed_executed_time,
+                                                                                 "subsystem2_core1")  # Add core name
                                 self.finished_and_aborted_tasks.append(self.processor1_assigned_task)
                                 self.processor1_assigned_task = None
                                 self.processor1_busy_time = 0 
@@ -230,6 +242,10 @@ class subsystem2:
                                     with self.resource_lock:
                                         self.reamining_resource1_number += self.processor2_assigned_task.resource1_usage
                                         self.reamining_resource2_number += self.processor2_assigned_task.resource2_usage
+                                    self.main_system.execution_tracker.task_finished(self.processor2_assigned_task.name, 
+                                                                                     self.current_time,
+                                                                                     self.processor2_assigned_task.proceed_executed_time,
+                                                                                     "subsystem2_core2")  # Add core name
                                     self.finished_and_aborted_tasks.append(self.processor2_assigned_task)
                                     self.processor2_assigned_task = None
                                     self.processor2_busy_time = 0 
@@ -245,6 +261,10 @@ class subsystem2:
                                 with self.resource_lock:
                                     self.reamining_resource1_number += self.processor2_assigned_task.resource1_usage
                                     self.reamining_resource2_number += self.processor2_assigned_task.resource2_usage
+                                self.main_system.execution_tracker.task_finished(self.processor2_assigned_task.name, 
+                                                                                 self.current_time,
+                                                                                 self.processor2_assigned_task.proceed_executed_time,
+                                                                                 "subsystem2_core2")  # Add core name
                                 self.finished_and_aborted_tasks.append(self.processor2_assigned_task)
                                 self.processor2_assigned_task = None
                                 self.processor2_busy_time = 0  
@@ -279,6 +299,10 @@ class subsystem2:
                                 with self.resource_lock:
                                     self.reamining_resource1_number += self.processor2_assigned_task.resource1_usage
                                     self.reamining_resource2_number += self.processor2_assigned_task.resource2_usage
+                                self.main_system.execution_tracker.task_finished(self.processor2_assigned_task.name, 
+                                                                                 self.current_time,
+                                                                                 self.processor2_assigned_task.proceed_executed_time,
+                                                                                 "subsystem2_core2")  # Add core name
                                 self.finished_and_aborted_tasks.append(self.processor2_assigned_task)
                                 self.processor2_assigned_task = None
                                 self.processor2_busy_time = 0 
@@ -287,7 +311,7 @@ class subsystem2:
 
                     else:
                         self.subsystem_did['processor2'] = 'IDLE'
-                        print("SUBSYSTEM 1 : CAN NOT PICK UP TASK FOR PROCESSOR 2")
+                        # print("SUBSYSTEM 1 : CAN NOT PICK UP TASK FOR PROCESSOR 2")
                 self.processor2_status = False
 
     

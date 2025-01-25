@@ -7,7 +7,7 @@ from SubSystems.subsystem4.subsystem4_task import subsystem4_task
 
 
 class subsystem4:
-    def __init__(self, subsystem4_tasks, resource1_number, resource2_number):
+    def __init__(self, subsystem4_tasks, resource1_number, resource2_number, main_system):
         self.subsystem_number = 4
         self.processors_count = 2
         self.tasks = subsystem4_tasks
@@ -44,6 +44,7 @@ class subsystem4:
         self.ready_queue_lock = threading.Lock()
         self.execution_lock = threading.Lock()
         self.current_time = -1
+        self.main_system = main_system
     
     def add_to_storing_all_tasks(self):
         for task in self.tasks:
@@ -109,7 +110,6 @@ class subsystem4:
                             self.processor1_busy_time = 0
                         else:
                             # EXECUTION 
-                            print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                             self.subsystem_did['processor1'] = self.processor1_assigned_task
                             self.processor1_assigned_task.proceed_executed_time += 1
                             self.processor1_busy_time -= 1
@@ -120,6 +120,12 @@ class subsystem4:
                                     self.reamining_resource2_number += self.processor1_assigned_task.resource2_usage
                                 with self.execution_lock:
                                     self.finished_tasks.append(self.processor1_assigned_task)
+                                    self.main_system.execution_tracker.task_finished(
+                                        self.processor1_assigned_task.name,
+                                        self.current_time,
+                                        self.processor1_assigned_task.proceed_executed_time,
+                                        "subsystem4_core1"
+                                    )
                                 self.processor1_assigned_task = None
                                 self.processor1_busy_time = 0
                 elif self.processor1_busy_time <= 0:
@@ -186,6 +192,12 @@ class subsystem4:
                                         self.reamining_resource2_number += self.processor1_assigned_task.resource2_usage
                                     with self.execution_lock:
                                         self.finished_tasks.append(self.processor1_assigned_task)
+                                        self.main_system.execution_tracker.task_finished(
+                                            self.processor1_assigned_task.name,
+                                            self.current_time,
+                                            self.processor1_assigned_task.proceed_executed_time,
+                                            "subsystem4_core1"
+                                        )
                                     self.processor1_assigned_task = None
                                     self.processor1_busy_time = 0
                         else:
@@ -217,7 +229,6 @@ class subsystem4:
                             self.processor2_busy_time = 0
                         else:
                             # EXECUTION 
-                            print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                             self.subsystem_did['processor2'] = self.processor2_assigned_task
                             self.processor2_assigned_task.proceed_executed_time += 1
                             self.processor2_busy_time -= 1
@@ -228,6 +239,12 @@ class subsystem4:
                                     self.reamining_resource2_number += self.processor2_assigned_task.resource2_usage
                                 with self.execution_lock:
                                     self.finished_tasks.append(self.processor2_assigned_task)
+                                    self.main_system.execution_tracker.task_finished(
+                                        self.processor2_assigned_task.name,
+                                        self.current_time,
+                                        self.processor2_assigned_task.proceed_executed_time,
+                                        "subsystem4_core2"
+                                    )
                                 self.processor2_assigned_task = None
                                 self.processor2_busy_time = 0
                             
@@ -239,7 +256,6 @@ class subsystem4:
                     temp_task = None
                     assign_resource = False
                     is_prerequisite_task_done = False
-                    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", len(self.Ready_queue))
                     with self.ready_queue_lock:
                         while len(self.Ready_queue) > 0:
                             temp_task = self.Ready_queue.pop(0)
@@ -295,6 +311,12 @@ class subsystem4:
                                         self.reamining_resource2_number += self.processor2_assigned_task.resource2_usage
                                     with self.execution_lock:
                                         self.finished_tasks.append(self.processor2_assigned_task)
+                                        self.main_system.execution_tracker.task_finished(
+                                            self.processor2_assigned_task.name,
+                                            self.current_time,
+                                            self.processor2_assigned_task.proceed_executed_time,
+                                            "subsystem4_core2"
+                                        )
                                     self.processor2_assigned_task = None
                                     self.processor2_busy_time = 0
                         else:

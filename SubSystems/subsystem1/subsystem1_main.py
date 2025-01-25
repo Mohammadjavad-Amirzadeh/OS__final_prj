@@ -10,7 +10,7 @@ from SubSystems.subsystem1.long_term import long_term_schedular
 
 
 class subsystem1:
-    def __init__(self, subsystem1_tasks, resource1_number, resource2_number):
+    def __init__(self, subsystem1_tasks, resource1_number, resource2_number, main_system=None):
         self.subsystem_number = 1
         self.processors_count = 3
         self.tasks = subsystem1_tasks
@@ -55,6 +55,7 @@ class subsystem1:
         self.waiting_queue_lock = threading.Lock()
         self.ready_queue_lock = threading.Lock()
         self.current_time = -1  # Add this line to track system time
+        self.main_system = main_system
         
         
     def initiate_resources(self):
@@ -104,13 +105,13 @@ class subsystem1:
         while not self.Waiting_queue.empty():
             _, task = self.Waiting_queue.get()
             best_ready_queue = self.appropriate_ready_queue_for_load_task()
-            if processor_number == 1:
+            if self.processor_number == 1:
                 # print(f"SUBSYSTEM 1 : TASK {task.name} MOVED TO Ready_queue1 By LOAD_BALANCER")
                 self.Ready_queue1.append(task)
-            elif processor_number == 2:
+            elif self.processor_number == 2:
                 # print(f"SUBSYSTEM 1 : TASK {task.name} MOVED TO Ready_queue2 By LOAD_BALANCER")
                 self.Ready_queue2.append(task)
-            elif processor_number == 3:
+            elif self.processor_number == 3:
                 # print(f"SUBSYSTEM 1 : TASK {task.name} MOVED TO Ready_queue3 By LOAD_BALANCER")                
                 self.Ready_queue3.append(task)
                 
@@ -217,6 +218,10 @@ class subsystem1:
                                 self.reamining_resource1_number += self.processor1_assigned_task.resource1_usage
                                 self.reamining_resource2_number += self.processor1_assigned_task.resource2_usage
                             print(f"SUBSYSTEM 1 : THIS TASK FINISED IN PROCESSOR 1 => {self.processor1_assigned_task} AND GIVE BACK THIS RESOURCES R1 = {self.processor1_assigned_task.resource1_usage}, R2 = {self.processor1_assigned_task.resource2_usage}")
+                            self.main_system.execution_tracker.task_finished(self.processor1_assigned_task.name, 
+                                                       self.current_time,
+                                                       self.processor1_assigned_task.proceed_executed_time,
+                                                       "subsystem1_core1")  # Add core name
                             self.finished_tasks.append(self.processor1_assigned_task)
                             self.processor1_assigned_task = None
                             self.processor1_busy_time = 0
@@ -278,6 +283,10 @@ class subsystem1:
                                 self.reamining_resource1_number += self.processor1_assigned_task.resource1_usage
                                 self.reamining_resource2_number += self.processor1_assigned_task.resource2_usage
                             print(f"SUBSYSTEM 1 : THIS TASK FINISED IN PROCESSOR 1 => {self.processor1_assigned_task} AND GIVE BACK THIS RESOURCES R1 = {self.processor1_assigned_task.resource1_usage}, R2 = {self.processor1_assigned_task.resource2_usage}")
+                            self.main_system.execution_tracker.task_finished(self.processor1_assigned_task.name, 
+                                                       self.current_time,
+                                                       self.processor1_assigned_task.proceed_executed_time,
+                                                       "subsystem1_core1")  # Add core name
                             self.finished_tasks.append(self.processor1_assigned_task)
                             self.processor1_assigned_task = None
                             self.processor1_busy_time = 0
@@ -320,6 +329,10 @@ class subsystem1:
                                 self.reamining_resource1_number += self.processor2_assigned_task.resource1_usage
                                 self.reamining_resource2_number += self.processor2_assigned_task.resource2_usage
                             print(f"SUBSYSTEM 1 : THIS TASK FINISED IN PROCESSOR 2 => {self.processor2_assigned_task} AND GIVE BACK THIS RESOURCES R1 = {self.processor2_assigned_task.resource1_usage}, R2 = {self.processor2_assigned_task.resource2_usage}")
+                            self.main_system.execution_tracker.task_finished(self.processor2_assigned_task.name, 
+                                                       self.current_time,
+                                                       self.processor2_assigned_task.proceed_executed_time,
+                                                       "subsystem1_core2")  # Add core name
                             self.finished_tasks.append(self.processor2_assigned_task)
                             self.processor2_assigned_task = None
                             self.processor2_busy_time = 0
@@ -382,6 +395,10 @@ class subsystem1:
                                 self.reamining_resource1_number += self.processor2_assigned_task.resource1_usage
                                 self.reamining_resource2_number += self.processor2_assigned_task.resource2_usage
                             print(f"SUBSYSTEM 1 : THIS TASK FINISED IN PROCESSOR 2 => {self.processor2_assigned_task} AND GIVE BACK THIS RESOURCES R1 = {self.processor2_assigned_task.resource1_usage}, R2 = {self.processor2_assigned_task.resource2_usage}")
+                            self.main_system.execution_tracker.task_finished(self.processor2_assigned_task.name, 
+                                                       self.current_time,
+                                                       self.processor2_assigned_task.proceed_executed_time,
+                                                       "subsystem1_core2")  # Add core name
                             self.finished_tasks.append(self.processor2_assigned_task)
                             self.processor2_assigned_task = None
                             self.processor2_busy_time = 0
@@ -423,6 +440,10 @@ class subsystem1:
                                 self.reamining_resource1_number += self.processor3_assigned_task.resource1_usage
                                 self.reamining_resource2_number += self.processor3_assigned_task.resource2_usage
                             print(f"SUBSYSTEM 1 : THIS TASK FINISED IN PROCESSOR 3 => {self.processor3_assigned_task} AND GIVE BACK THIS RESOURCES R1 = {self.processor3_assigned_task.resource1_usage}, R2 = {self.processor3_assigned_task.resource2_usage}")
+                            self.main_system.execution_tracker.task_finished(self.processor3_assigned_task.name, 
+                                                       self.current_time,
+                                                       self.processor3_assigned_task.proceed_executed_time,
+                                                       "subsystem1_core3")  # Add core name
                             self.finished_tasks.append(self.processor3_assigned_task)
                             self.processor3_assigned_task = None
                             self.processor3_busy_time = 0
@@ -483,6 +504,10 @@ class subsystem1:
                                 self.reamining_resource1_number += self.processor3_assigned_task.resource1_usage
                                 self.reamining_resource2_number += self.processor3_assigned_task.resource2_usage
                             print(f"SUBSYSTEM 1 : THIS TASK FINISED IN PROCESSOR 3 => {self.processor3_assigned_task} AND GIVE BACK THIS RESOURCES R1 = {self.processor3_assigned_task.resource1_usage}, R2 = {self.processor3_assigned_task.resource2_usage}")
+                            self.main_system.execution_tracker.task_finished(self.processor3_assigned_task.name, 
+                                                       self.current_time,
+                                                       self.processor3_assigned_task.proceed_executed_time,
+                                                       "subsystem1_core3")  # Add core name
                             self.finished_tasks.append(self.processor3_assigned_task)
                             self.processor3_assigned_task = None
                             self.processor3_busy_time = 0

@@ -74,36 +74,23 @@ def get_input():
     
     print('-----------------------------------')
     print('Enter Sub System4 Tasks')
+    print("Format: name execution_time r1_usage r2_usage arrival prerequisite_task")
     sub4_tasks = []
     while True:
-        temp = input()
-        if temp == '$':
+        line = input()
+        if line == '$':
             break
-        else:
-            task = temp.split()
-            if task[5] == '-':
-                task_dict = {
-                    'name': task[0],
-                    'execution_time': int(task[1]),
-                    'resource1_usage': int(task[2]),
-                    'resource2_usage': int(task[3]),
-                    'arrival_time': int(task[4]), 
-                    'prerequisite_task': None
-                }
-            else:
-                task_dict = {
-                    'name': task[0],
-                    'execution_time': int(task[1]),
-                    'resource1_usage': int(task[2]),
-                    'resource2_usage': int(task[3]),
-                    'arrival_time': int(task[4]), 
-                    'prerequisite_task': task[5]
-                }
-            sub4_tasks.append(task_dict)
-            
-    print(f'SUB SYSTEM 4 TASKS : {sub4_tasks}')
+        name, exec_time, r1, r2, arrival, prerequisite = line.split()
+        if prerequisite == "-":
+            prerequisite = None
+        sub4_tasks.append({
+            'name': name,
+            'execution_time': int(exec_time),
+            'resource1_usage': int(r1),
+            'resource2_usage': int(r2),
+            'arrival_time': int(arrival),
+            'prerequisite_task': prerequisite
+        })
 
-    print()
-    
-    
-    return sub1_tasks, sub2_tasks, sub3_tasks, sub4_tasks, sub1_r1, sub1_r2, sub2_r1, sub2_r2, sub3_r1, sub3_r2, sub4_r1, sub4_r2
+    return (sub1_tasks, sub2_tasks, sub3_tasks, sub4_tasks, 
+            sub1_r1, sub1_r2, sub2_r1, sub2_r2, sub3_r1, sub3_r2, sub4_r1, sub4_r2)
