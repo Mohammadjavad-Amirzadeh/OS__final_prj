@@ -105,13 +105,13 @@ class subsystem1:
             _, task = self.Waiting_queue.get()
             best_ready_queue = self.appropriate_ready_queue_for_load_task()
             if processor_number == 1:
-                print(f"TASK {task.name} MOVED TO Ready_queue1 By LOAD_BALANCER")
+                # print(f"SUBSYSTEM 1 : TASK {task.name} MOVED TO Ready_queue1 By LOAD_BALANCER")
                 self.Ready_queue1.append(task)
             elif processor_number == 2:
-                print(f"TASK {task.name} MOVED TO Ready_queue2 By LOAD_BALANCER")
+                # print(f"SUBSYSTEM 1 : TASK {task.name} MOVED TO Ready_queue2 By LOAD_BALANCER")
                 self.Ready_queue2.append(task)
             elif processor_number == 3:
-                print(f"TASK {task.name} MOVED TO Ready_queue3 By LOAD_BALANCER")                
+                # print(f"SUBSYSTEM 1 : TASK {task.name} MOVED TO Ready_queue3 By LOAD_BALANCER")                
                 self.Ready_queue3.append(task)
                 
         lists = [self.Ready_queue1, self.Ready_queue2, self.Ready_queue3]
@@ -129,6 +129,7 @@ class subsystem1:
 
             element = lists[max_index].pop()
             lists[min_index].append(element)
+        
             
     
     def request_task(self, processor_number):
@@ -142,20 +143,20 @@ class subsystem1:
             for priority, task in waiting_list:
                 if counter < 2:
                     if processor_number == 1:
-                        print(f"TASK {task.name} MOVED TO Ready_queue1")
+                        print(f"SUBSYSTEM 1 : TASK {task.name} MOVED TO Ready_queue1 FROM WAITING QUEUE BECAUSE READY_QUEUE 1 REQUESTED TASK")
                         self.Ready_queue1.append(task)
                     elif processor_number == 2:
-                        print(f"TASK {task.name} MOVED TO Ready_queue2")
+                        print(f"SUBSYSTEM 1 : TASK {task.name} MOVED TO Ready_queue2 FROM WAITING QUEUE BECAUSE READY_QUEUE 2 REQUESTED TASK")
                         self.Ready_queue2.append(task)
                     elif processor_number == 3:
-                        print(f"TASK {task.name} MOVED TO Ready_queue3")                
+                        print(f"SUBSYSTEM 1 : TASK {task.name} MOVED TO Ready_queue3 FROM WAITING QUEUE BECAUSE READY_QUEUE 3 REQUESTED TASK")                
                         self.Ready_queue3.append(task)
                 else:
                     with self.waiting_queue_lock:
                         self.Waiting_queue.put((priority, task))
                 
         else:
-            print("NO TASK IN WAITING QUEUE")
+            print("SUBSYSTEM 1 : NO TASK IN WAITING QUEUE")
             
     def check_add_task_by_arrival_time(self):
         storing_tasks = []
@@ -180,13 +181,13 @@ class subsystem1:
                 self.storing_all_tasks.put((arrival, task))
         if t1:
             for task in list(self.Ready_queue1):
-                print(f'ADD {task.name} To Ready_queue1')
+                print(f'SUBSYSTEM 1 : ARRIVED {task.name} AND ADD {task.name} To Ready_queue1')
         if t2:
             for task in list(self.Ready_queue2):
-                print(f'ADD {task.name} To Ready_queue2')
+                print(f'SUBSYSTEM 1 : ARRIVED {task.name} AND ADD {task.name} To Ready_queue2')
         if t3:
             for task in list(self.Ready_queue3):
-                print(f'ADD {task.name} To Ready_queue3')
+                print(f'SUBSYSTEM 1 : ARRIVED {task.name} AND ADD {task.name} To Ready_queue3')
             
     def set_clock(self):
         self.current_time += 1  # Add this line to increment time
@@ -215,6 +216,7 @@ class subsystem1:
                             with self.resource_lock:
                                 self.reamining_resource1_number += self.processor1_assigned_task.resource1_usage
                                 self.reamining_resource2_number += self.processor1_assigned_task.resource2_usage
+                            print(f"SUBSYSTEM 1 : THIS TASK FINISED IN PROCESSOR 1 => {self.processor1_assigned_task} AND GIVE BACK THIS RESOURCES R1 = {self.processor1_assigned_task.resource1_usage}, R2 = {self.processor1_assigned_task.resource2_usage}")
                             self.finished_tasks.append(self.processor1_assigned_task)
                             self.processor1_assigned_task = None
                             self.processor1_busy_time = 0
@@ -222,6 +224,7 @@ class subsystem1:
                             with self.resource_lock:
                                 self.reamining_resource1_number += self.processor1_assigned_task.resource1_usage
                                 self.reamining_resource2_number += self.processor1_assigned_task.resource2_usage
+                            print(f"SUBSYSTEM 1 : ENDED QUANTUM OF THIS TASK IN PROCESSOR 1 => {self.processor1_assigned_task} AND GIVE BACK THIS RESOURCES R1 = {self.processor1_assigned_task.resource1_usage}, R2 = {self.processor1_assigned_task.resource2_usage}")
                             with self.ready_queue_lock:
                                 self.Ready_queue1.append(self.processor1_assigned_task)
                                 
@@ -246,13 +249,14 @@ class subsystem1:
                                     else:
                                         with self.waiting_queue_lock:
                                             self.Waiting_queue.put((first_task_in_ready_queue.get_remaining_execution_time(), first_task_in_ready_queue))
+                                            print(f"SUBSYSTEM 1 : THIS TASK {first_task_in_ready_queue} MOVED TO WAITING QUEUE BECAUSE THERE IS NO AVAILABLE RESOURCES NOW.")
                                         is_pick_task = False  
                                         self.processor1_is_ok = False     
                         else: 
                             '''
                             Ready Queue is Empty at first
                             '''
-                            print("Ready Queue1 is Empty and Request for Task (Ready Queue is Empty at first)")
+                            print("SUBSYSTEM 1 : Ready Queue1 is Empty and Request for Task (Ready Queue is Empty at first)")
                             self.subsystem_did['processor1'] = "IDLE"  
                             self.request_task(1)
                             is_pick_task = False
@@ -264,7 +268,7 @@ class subsystem1:
                             self.processor1_busy_time = weighted_round_robbin(self.Ready_queue1, self.processor1_assigned_task)
                         # EXECUTION
                         self.processor1_assigned_task.assigned_quantum = self.processor1_busy_time
-                        print(f"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!{self.processor1_assigned_task} , QUANTUM = {self.processor1_assigned_task.assigned_quantum}")
+                        print(f"SUBSYSTEM 1 : THIS TASK GET PROCESSOR 1 => {self.processor1_assigned_task}, AND GET QUANTUM = {self.processor1_assigned_task.assigned_quantum}, AND THIS RESOURCES : R1 = {self.processor1_assigned_task.resource1_usage}, R2 = {self.processor1_assigned_task.resource2_usage}")
                         self.subsystem_did['processor1'] = self.processor1_assigned_task
                         self.processor1_assigned_task.proceed_executed_time += 1
                         self.processor1_busy_time -= 1
@@ -273,6 +277,7 @@ class subsystem1:
                             with self.resource_lock:
                                 self.reamining_resource1_number += self.processor1_assigned_task.resource1_usage
                                 self.reamining_resource2_number += self.processor1_assigned_task.resource2_usage
+                            print(f"SUBSYSTEM 1 : THIS TASK FINISED IN PROCESSOR 1 => {self.processor1_assigned_task} AND GIVE BACK THIS RESOURCES R1 = {self.processor1_assigned_task.resource1_usage}, R2 = {self.processor1_assigned_task.resource2_usage}")
                             self.finished_tasks.append(self.processor1_assigned_task)
                             self.processor1_assigned_task = None
                             self.processor1_busy_time = 0
@@ -280,6 +285,7 @@ class subsystem1:
                             with self.resource_lock:
                                 self.reamining_resource1_number += self.processor1_assigned_task.resource1_usage
                                 self.reamining_resource2_number += self.processor1_assigned_task.resource2_usage
+                            print(f"SUBSYSTEM 1 : ENDED QUANTUM OF THIS TASK IN PROCESSOR 1 => {self.processor1_assigned_task} AND GIVE BACK THIS RESOURCES R1 = {self.processor1_assigned_task.resource1_usage}, R2 = {self.processor1_assigned_task.resource2_usage}")
                             with self.ready_queue_lock:
                                 self.Ready_queue1.append(self.processor1_assigned_task)
                                 
@@ -292,10 +298,7 @@ class subsystem1:
                         and sent all those task to waiting queue
                         '''
                         self.subsystem_did['processor1'] = "IDLE" 
-                        print('''Ready Queue1 is Empty and Request for Task :
-                            there Was a task in ready queue 
-                            but cant assign any of them to cpu
-                            and sent all those task to waiting queue''')
+                        print('''SUBSYSTEM 1 : Ready Queue1 is Empty and Request for Task''')
                         self.request_task(1)
                          
                 self.processor1_status = False
@@ -316,6 +319,7 @@ class subsystem1:
                             with self.resource_lock:
                                 self.reamining_resource1_number += self.processor2_assigned_task.resource1_usage
                                 self.reamining_resource2_number += self.processor2_assigned_task.resource2_usage
+                            print(f"SUBSYSTEM 1 : THIS TASK FINISED IN PROCESSOR 2 => {self.processor2_assigned_task} AND GIVE BACK THIS RESOURCES R1 = {self.processor2_assigned_task.resource1_usage}, R2 = {self.processor2_assigned_task.resource2_usage}")
                             self.finished_tasks.append(self.processor2_assigned_task)
                             self.processor2_assigned_task = None
                             self.processor2_busy_time = 0
@@ -323,6 +327,7 @@ class subsystem1:
                             with self.resource_lock:
                                 self.reamining_resource1_number += self.processor2_assigned_task.resource1_usage
                                 self.reamining_resource2_number += self.processor2_assigned_task.resource2_usage
+                            print(f"SUBSYSTEM 1 : ENDED QUANTUM OF THIS TASK IN PROCESSOR 2 => {self.processor2_assigned_task} AND GIVE BACK THIS RESOURCES R1 = {self.processor2_assigned_task.resource1_usage}, R2 = {self.processor2_assigned_task.resource2_usage}")
                             with self.ready_queue_lock:
                                 self.Ready_queue2.append(self.processor2_assigned_task)
                                
@@ -348,13 +353,14 @@ class subsystem1:
                                     else:
                                         with self.waiting_queue_lock:
                                             self.Waiting_queue.put((first_task_in_ready_queue.get_remaining_execution_time(), first_task_in_ready_queue))
+                                            print(f"SUBSYSTEM 1 : THIS TASK {first_task_in_ready_queue} MOVED TO WAITING QUEUE BECAUSE THERE IS NO AVAILABLE RESOURCES NOW.")
                                         is_pick_task = False  
                                         self.processor2_is_ok = False     
                         else: 
                             '''
                             Ready Queue is Empty at first
                             '''
-                            print("Ready Queue2 is Empty and Request for Task (Ready Queue is Empty at first)")
+                            print("SUBSYSTEM 1 : Ready Queue2 is Empty and Request for Task (Ready Queue is Empty at first)")
                             self.subsystem_did['processor2'] = 'IDLE'
                             self.request_task(2)
                             is_pick_task = False
@@ -366,7 +372,7 @@ class subsystem1:
                             self.processor2_busy_time = weighted_round_robbin(self.Ready_queue2, self.processor2_assigned_task)
                         # EXECUTION
                         self.processor2_assigned_task.assigned_quantum = self.processor2_busy_time
-                        print(f"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!{self.processor2_assigned_task} , QUANTUM = {self.processor2_assigned_task.assigned_quantum}")
+                        print(f"SUBSYSTEM 1 : THIS TASK GET PROCESSOR 2 => {self.processor2_assigned_task}, AND GET QUANTUM = {self.processor2_assigned_task.assigned_quantum}, AND THIS RESOURCES : R1 = {self.processor2_assigned_task.resource1_usage}, R2 = {self.processor2_assigned_task.resource2_usage}")
                         self.subsystem_did['processor2'] = self.processor2_assigned_task
                         self.processor2_assigned_task.proceed_executed_time += 1
                         self.processor2_busy_time -= 1
@@ -375,6 +381,7 @@ class subsystem1:
                             with self.resource_lock:
                                 self.reamining_resource1_number += self.processor2_assigned_task.resource1_usage
                                 self.reamining_resource2_number += self.processor2_assigned_task.resource2_usage
+                            print(f"SUBSYSTEM 1 : THIS TASK FINISED IN PROCESSOR 2 => {self.processor2_assigned_task} AND GIVE BACK THIS RESOURCES R1 = {self.processor2_assigned_task.resource1_usage}, R2 = {self.processor2_assigned_task.resource2_usage}")
                             self.finished_tasks.append(self.processor2_assigned_task)
                             self.processor2_assigned_task = None
                             self.processor2_busy_time = 0
@@ -382,6 +389,7 @@ class subsystem1:
                             with self.resource_lock:
                                 self.reamining_resource1_number += self.processor2_assigned_task.resource1_usage
                                 self.reamining_resource2_number += self.processor2_assigned_task.resource2_usage
+                            print(f"SUBSYSTEM 1 : ENDED QUANTUM OF THIS TASK IN PROCESSOR 2 => {self.processor2_assigned_task} AND GIVE BACK THIS RESOURCES R1 = {self.processor2_assigned_task.resource1_usage}, R2 = {self.processor2_assigned_task.resource2_usage}")
                             with self.ready_queue_lock:
                                 self.Ready_queue2.append(self.processor2_assigned_task)                                
                                 
@@ -394,10 +402,7 @@ class subsystem1:
                         and sent all those task to waiting queue
                         '''
                         self.subsystem_did['processor2'] = "IDLE"
-                        print('''Ready Queue2 is Empty and Request for Task :
-                            there Was a task in ready queue 
-                            but cant assign any of them to cpu
-                            and sent all those task to waiting queue''')
+                        print('''SUBSYSTEM 1 : Ready Queue2 is Empty and Request for Task''')
                         self.request_task(2)
                          
                 self.processor2_status = False
@@ -417,6 +422,7 @@ class subsystem1:
                             with self.resource_lock:
                                 self.reamining_resource1_number += self.processor3_assigned_task.resource1_usage
                                 self.reamining_resource2_number += self.processor3_assigned_task.resource2_usage
+                            print(f"SUBSYSTEM 1 : THIS TASK FINISED IN PROCESSOR 3 => {self.processor3_assigned_task} AND GIVE BACK THIS RESOURCES R1 = {self.processor3_assigned_task.resource1_usage}, R2 = {self.processor3_assigned_task.resource2_usage}")
                             self.finished_tasks.append(self.processor3_assigned_task)
                             self.processor3_assigned_task = None
                             self.processor3_busy_time = 0
@@ -424,6 +430,7 @@ class subsystem1:
                             with self.resource_lock:
                                 self.reamining_resource1_number += self.processor3_assigned_task.resource1_usage
                                 self.reamining_resource2_number += self.processor3_assigned_task.resource2_usage
+                            print(f"SUBSYSTEM 1 : ENDED QUANTUM OF THIS TASK IN PROCESSOR 3 => {self.processor3_assigned_task} AND GIVE BACK THIS RESOURCES R1 = {self.processor3_assigned_task.resource1_usage}, R2 = {self.processor3_assigned_task.resource2_usage}")
                             with self.ready_queue_lock:
                                 self.Ready_queue3.append(self.processor3_assigned_task)
                                 
@@ -448,13 +455,14 @@ class subsystem1:
                                     else:
                                         with self.waiting_queue_lock:
                                             self.Waiting_queue.put((first_task_in_ready_queue.get_remaining_execution_time(), first_task_in_ready_queue))
+                                            print(f"SUBSYSTEM 1 : THIS TASK {first_task_in_ready_queue} MOVED TO WAITING QUEUE BECAUSE THERE IS NO AVAILABLE RESOURCES NOW.")
                                         is_pick_task = False  
                         else: 
                             '''
                             Ready Queue is Empty at first
                             '''
                             self.subsystem_did['processor3'] ="IDLE"
-                            print("Ready Queue3 is Empty and Request for Task (Ready Queue is Empty at first)")
+                            print("SUBSYSTEM 1 : Ready Queue3 is Empty and Request for Task (Ready Queue is Empty at first)")
                             self.request_task(3)
                             is_pick_task = False
                             empty_at_first = True
@@ -465,7 +473,7 @@ class subsystem1:
                             self.processor3_busy_time = weighted_round_robbin(self.Ready_queue3, self.processor3_assigned_task)
                         # EXECUTION
                         self.processor3_assigned_task.assigned_quantum = self.processor3_busy_time
-                        print(f"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!{self.processor3_assigned_task} , QUANTUM = {self.processor3_assigned_task.assigned_quantum}")
+                        print(f"SUBSYSTEM 1 : THIS TASK GET PROCESSOR 3 => {self.processor3_assigned_task}, AND GET QUANTUM = {self.processor3_assigned_task.assigned_quantum}, AND THIS RESOURCES : R1 = {self.processor3_assigned_task.resource1_usage}, R2 = {self.processor3_assigned_task.resource2_usage}")
                         self.subsystem_did['processor3'] = self.processor3_assigned_task
                         self.processor3_assigned_task.proceed_executed_time += 1
                         self.processor3_busy_time -= 1
@@ -474,6 +482,7 @@ class subsystem1:
                             with self.resource_lock:
                                 self.reamining_resource1_number += self.processor3_assigned_task.resource1_usage
                                 self.reamining_resource2_number += self.processor3_assigned_task.resource2_usage
+                            print(f"SUBSYSTEM 1 : THIS TASK FINISED IN PROCESSOR 3 => {self.processor3_assigned_task} AND GIVE BACK THIS RESOURCES R1 = {self.processor3_assigned_task.resource1_usage}, R2 = {self.processor3_assigned_task.resource2_usage}")
                             self.finished_tasks.append(self.processor3_assigned_task)
                             self.processor3_assigned_task = None
                             self.processor3_busy_time = 0
@@ -481,6 +490,7 @@ class subsystem1:
                             with self.resource_lock:
                                 self.reamining_resource1_number += self.processor3_assigned_task.resource1_usage
                                 self.reamining_resource2_number += self.processor3_assigned_task.resource2_usage
+                            print(f"SUBSYSTEM 1 : ENDED QUANTUM OF THIS TASK IN PROCESSOR 3 => {self.processor3_assigned_task} AND GIVE BACK THIS RESOURCES R1 = {self.processor3_assigned_task.resource1_usage}, R2 = {self.processor3_assigned_task.resource2_usage}")
                             with self.ready_queue_lock:
                                 self.Ready_queue3.append(self.processor3_assigned_task)
                                 
@@ -493,10 +503,7 @@ class subsystem1:
                         and sent all those task to waiting queue
                         '''
                         self.subsystem_did['processor3'] = "IDLE"
-                        print('''Ready Queue3 is Empty and Request for Task :
-                            there Was a task in ready queue 
-                            but cant assign any of them to cpu
-                            and sent all those task to waiting queue''')
+                        print('''SUBSYSTEM 1 : Ready Queue3 is Empty and Request for Task''')
                         self.request_task(3)
                          
                 self.processor3_status = False
