@@ -8,9 +8,6 @@ from SubSystems.subsystem2.subsystem2_task import subsystem2_task
 from SubSystems.subsystem2.subsystem2_main import subsystem2
 import time
 
-def get_available_resources():
-    # Temporary implementation - will be expanded later
-    return 0, 0
 
 def request_resources(r1_needed, r2_needed):
     # Temporary implementation - will be expanded later
@@ -47,21 +44,21 @@ def run():
     
     SUB1 = subsystem1(sub1_tasks, sub1_r1, sub1_r2)
     SUB2 = subsystem2(sub2_tasks, sub2_r1, sub2_r2)
-    # SUB3 = subsystem3(sub3_tasks)
+    SUB3 = subsystem3(sub3_tasks, sub3_r1, sub3_r2)  # Uncomment this
     
     print("Subsystem 1 Initial State:")
     SUB1.print_waiting_queue()
-    # print("\nSubsystem 3 Initial State:")
-    # print(f"Real-time tasks to schedule: {len(sub3_tasks)}")
+    print("\nSubsystem 3 Initial State:")  # Uncomment this
+    print(f"Real-time tasks to schedule: {len(sub3_tasks)}")  # Uncomment this
     
     input('Press Enter to start...')
     print('---------------------------------------------')
     
     subsystem1_thread = threading.Thread(target=SUB1.start_subsystem, args=())
     subsystem2_thread = threading.Thread(target=SUB2.start_subsystem, args=())
-    # subsystem3_thread = threading.Thread(target=SUB3.start_subsystem, args=())
+    subsystem3_thread = threading.Thread(target=SUB3.start_subsystem)  # Uncomment this
     
-    subsystems_threads.extend([subsystem1_thread, subsystem2_thread])
+    subsystems_threads.extend([subsystem1_thread, subsystem2_thread, subsystem3_thread])  # Add subsystem3_thread
     
     Time = 0
     for sub_thread in subsystems_threads:
@@ -81,10 +78,12 @@ def run():
         
         SUB1.set_clock()
         SUB2.set_clock()
-        # SUB3.set_clock()
+        SUB3.set_clock()  # Uncomment this
         
         while True:
-            if (SUB1.is_processores_finished()):
+            if (SUB1.is_processores_finished() and 
+                SUB2.is_processores_finished() and
+                SUB3.is_processor_finished()):  # Add SUB3 check
                 break
             time.sleep(0.1)
             
@@ -147,35 +146,44 @@ def run():
         print(f'\tFinished/Aborted Tasks: {[task.name for task in SUB2.finished_and_aborted_tasks]}')
 
         # Print Subsystem 3 status
-        # print('\nSUB3 (Real-time):')
-        # status_line = None
-        # if SUB3.processor_assigned_task:
-        #     if SUB3.processor_busy_time > 0:
-        #         status_line = f'\tTask {SUB3.processor_assigned_task.name} - Running (Busy time: {SUB3.processor_busy_time})'
-        #     else:
-        #         status_line = f'\tTask {SUB3.processor_assigned_task.name} - Completed (Busy time: {SUB3.processor_busy_time})'
-        # elif SUB3.quantum_task:
-        #     status_line = f'\tTask {SUB3.quantum_task.name} - Processing (Busy time: {SUB3.processor_busy_time})'
-        # else:
-        #     if len(SUB3.Ready_queue) == 0 and len(SUB3.waiting_arrivals) == 0:
-        #         status_line = f'\tNo tasks available'
-        #     else:
-        #         status_line = f'\tWaiting for next task (Busy time: {SUB3.processor_busy_time})'
-        # print(status_line)
-
-        # print(f'\tWaiting Arrivals: {[task.name for task in SUB3.waiting_arrivals]}')
-        # print(f'\tReady Queue: {[task.name for task in SUB3.Ready_queue]}')
-        # if SUB3.missed_deadlines > 0:
-        #     print(f'\tMissed Deadlines: {SUB3.missed_deadlines}')
-        # print(f'\tCompleted Periods: {SUB3.completed_periods}')
+        print('\nSUB3 (Real-time):')
+        status_line = None
         
-        if (len(SUB1.finished_tasks) == len(sub1_tasks) 
-            # len(SUB2.finished_and_aborted_tasks) == len(sub2_tasks)
-            # all(task.repetitions_number <= 0 for task in SUB3.Ready_queue)
-            ):
+        if SUB3.just_completed and SUB3.processor_busy_time == 0:
+            # Show BURST FINISHED status for the quantum where task completes
+            status_line = f'\tTask {SUB3.just_completed.name} - Processing (Busy time: 0, BURST FINISHED)'
+            SUB3.just_completed = None  # Clear it after showing
+            SUB3.quantum_task = None  # Also clear quantum_task
+        elif SUB3.processor_assigned_task:
+            task = SUB3.processor_assigned_task
+            accept_status = "Accepted" if task.is_accepted else "Rejected" if task.is_accepted is not None else "Pending"
+            status = f"Running (Busy time: {SUB3.processor_busy_time}, {accept_status})"
+            status_line = f'\tTask {task.name} - {status}'
+        else:
+            status_line = '\tNo tasks available' if len(SUB3.Ready_queue) == 0 and len(SUB3.waiting_arrivals) == 0 else f'\tWaiting for next task (Busy time: {SUB3.processor_busy_time})'
+        print(status_line)
+
+        print('\tWaiting Arrivals:')
+        for task in SUB3.waiting_arrivals:
+            status = "BURST FINISHED" if task.current_burst_complete else "Accepted" if task.is_accepted else "Rejected" if task.is_accepted is not None else "Pending"
+            print(f'\t\t{task.name} ({status})')
+            
+        print('\tReady Queue:')
+        for task in SUB3.Ready_queue:
+            status = "BURST FINISHED" if task.current_burst_complete else "Accepted" if task.is_accepted else "Rejected" if task.is_accepted is not None else "Pending"
+            print(f'\t\t{task.name} ({status})')
+            
+        print(f'\tCompleted Periods: {SUB3.completed_periods}')
+        print(f'\tFinished Tasks: {[task.name for task in SUB3.finished_tasks]}')
+        print(f'\tRejected Tasks: {[task.name for task in SUB3.rejected_tasks]}')
+
+        # Update completion check
+        if (len(SUB1.finished_tasks) == len(sub1_tasks) and
+            len(SUB2.finished_and_aborted_tasks) == len(sub2_tasks) and
+            len(SUB3.finished_tasks) +len(SUB3.rejected_tasks) == len(sub3_tasks)):
             print("\nAll tasks completed successfully!")
             break
-            
+        
         Time += 1
     
     for sub_thread in subsystems_threads:

@@ -3,11 +3,14 @@ import threading
 import time
 from .subsystem3_scheduler import (rate_monotonic_schedule, 
                                  is_schedulable_rm,
-                                 get_next_deadline)
+                                 get_next_deadline,
+                                 should_preempt)  # Add this import
 
 class subsystem3:
-    def __init__(self, subsystem3_tasks):
+    def __init__(self, subsystem3_tasks, resource1_number, resource2_number):
         self.processors_count = 1
+        self.resource1_number = resource1_number
+        self.resource2_number = resource2_number
         self.Ready_queue = []  # Actually running tasks
         self.tasks = subsystem3_tasks  # All tasks including future arrivals
         self.waiting_arrivals = sorted(subsystem3_tasks, key=lambda x: x.arrival_time)
@@ -16,11 +19,13 @@ class subsystem3:
         self.processor_busy_time = 0
         self.processor_assigned_task = None
         self.quantum_task = None
+        self.just_completed = None  # Add new variable to track task that just completed its burst
         
         self.current_time = -1
         self.resource_lock = threading.Lock()
         self.completed_periods = 0
-        self.missed_deadlines = 0
+        self.finished_tasks = []  # Add list for finished tasks
+        self.rejected_tasks = []
         
     def can_accept_task(self, new_task, current_time):
         """Determine if a new task can be accepted with current tasks"""
@@ -34,66 +39,125 @@ class subsystem3:
         # Check for new task arrivals
         while self.waiting_arrivals and self.waiting_arrivals[0].arrival_time <= self.current_time:
             new_task = self.waiting_arrivals.pop(0)
-            if self.can_accept_task(new_task, self.current_time):
-                self.Ready_queue.append(new_task)
-                new_task.next_deadline = new_task.arrival_time + new_task.period  # Initialize first deadline
-                print(f"Accepted task {new_task.name} with period {new_task.period}, first deadline: {new_task.next_deadline}")
-            else:
-                print(f"Rejected task {new_task.name} - Cannot guarantee {new_task.period} period deadline")
+            if new_task.is_accepted is None:  # Only check acceptance for first arrival
+                if self.can_accept_task(new_task, self.current_time):
+                    if new_task.resource1_usage <= self.resource1_number and new_task.resource2_usage <= self.resource2_number:
+                        new_task.is_accepted = True
+                        self.Ready_queue.append(new_task)
+                        new_task.next_deadline = new_task.arrival_time + new_task.period
+                        print(f"First arrival: Accepted task {new_task.name} with period {new_task.period}, deadline: {new_task.next_deadline}")
+                    else:
+                        new_task.is_accepted = False
+                        print(f"First arrival: Rejected task {new_task.name} - Not Enough resources")
+                        self.rejected_tasks.append(new_task)
+                else:
+                    new_task.is_accepted = False
+                    print(f"First arrival: Rejected task {new_task.name} - Cannot guarantee {new_task.period} period deadline")
+                    self.rejected_tasks.append(new_task)
+            else:  # For subsequent arrivals
+                if new_task.is_accepted:
+                    self.Ready_queue.append(new_task)
+                    new_task.next_deadline = new_task.arrival_time + new_task.period
+                    print(f"Next period: Task {new_task.name} added to ready queue, deadline: {new_task.next_deadline}")
 
-        # Process each task's deadline
-        for task in list(self.Ready_queue):  # Make copy to avoid modification during iteration
+        # Reset burst completion flag for all tasks at period boundaries
+        for task in list(self.Ready_queue):
             if self.current_time >= task.next_deadline:
-                if task.get_remaining_execution_time() > 0:
-                    # Missed deadline
-                    self.missed_deadlines += 1
-                    print(f"WARNING: Task {task.name} missed deadline {task.next_deadline} at time {self.current_time}")
-                else:
-                    # Completed period successfully
-                    self.completed_periods += 1
-                    print(f"Task {task.name} completed period")
-
-                # Handle next period
-                if task.repetitions_number > 0:
-                    task.repetitions_number -= 1
-                    task.proceed_executed_time = 0
-                    task.next_deadline = task.next_deadline + task.period
-                    print(f"Task {task.name} starting new period, deadline: {task.next_deadline}")
-                else:
-                    print(f"Task {task.name} completed all repetitions")
-                    self.Ready_queue.remove(task)
+                task.current_burst_complete = False
+                task.next_deadline = task.next_deadline + task.period
+                print(f"Task {task.name} starting new period, deadline: {task.next_deadline}")
 
     def processor1(self):
         while True:
             if self.processor_status:
-                # First check for new task to process
+                # First check if current task should be preempted
+                if self.processor_assigned_task and self.Ready_queue:
+                    if should_preempt(self.processor_assigned_task, self.Ready_queue):
+                        print(f"Preempting task {self.processor_assigned_task.name}")
+                        # Put current task back in ready queue
+                        self.Ready_queue.append(self.processor_assigned_task)
+                        self.processor_assigned_task = None
+                        self.processor_busy_time = 0
+
+                # Then process or get new task
                 if self.processor_busy_time <= 0:
                     task, deadline = rate_monotonic_schedule(self.Ready_queue, self.current_time)
                     if task and deadline > self.current_time:
-                        # Remove task from ready queue when assigning it
                         self.Ready_queue.remove(task)
                         self.processor_assigned_task = task
                         self.processor_busy_time = task.get_remaining_execution_time()
                         self.quantum_task = task
                         print(f"Starting task {task.name}, deadline: {deadline}")
-                        # First tick happens immediately
                         task.proceed_executed_time += 1
                         self.processor_busy_time -= 1
+                        #چك اتمام
+                        if self.processor_assigned_task.get_remaining_execution_time() <= 0:
+                            self.processor_assigned_task.current_burst_complete = True
+                            self.just_completed = self.processor_assigned_task  # Store the just completed task
+                            print(f"\n>>> Task {self.processor_assigned_task.name} COMPLETED BURST for current period <<<\n")
+                            self.completed_periods += 1
+                            
+                            if self.processor_assigned_task.repetitions_number > 0:
+                                self.processor_assigned_task.repetitions_number -= 1
+                                if self.processor_assigned_task.repetitions_number > 0:
+                                    # Calculate next arrival and put in waiting_arrivals
+                                    task = self.processor_assigned_task
+                                    task.proceed_executed_time = 0
+                                    task.current_burst_complete = False
+                                    # Fix: Next arrival should be based on first arrival plus period multiples
+                                    periods_completed = (self.current_time - task.arrival_time) // task.period
+                                    task.arrival_time = task.arrival_time + (periods_completed + 1) * task.period
+                                    
+                                    # Insert into waiting_arrivals maintaining sort
+                                    insert_idx = 0
+                                    for idx, t in enumerate(self.waiting_arrivals):
+                                        if t.arrival_time > task.arrival_time:
+                                            break
+                                        insert_idx = idx + 1
+                                    self.waiting_arrivals.insert(insert_idx, task)
+                                    print(f"Task {task.name} scheduled for next arrival at {task.arrival_time}")
+                                else:
+                                    self.finished_tasks.append(self.processor_assigned_task)
+                                    
+                            self.processor_assigned_task = None
+                            self.processor_busy_time = 0
 
-                # Then process current task if any
                 elif self.processor_assigned_task:
                     self.quantum_task = self.processor_assigned_task
                     self.processor_assigned_task.proceed_executed_time += 1
                     self.processor_busy_time -= 1
                     
                     if self.processor_assigned_task.get_remaining_execution_time() <= 0:
-                        print(f"Task {self.processor_assigned_task.name} completed execution for current period")
+                        self.processor_assigned_task.current_burst_complete = True
+                        self.just_completed = self.processor_assigned_task  # Store the just completed task
+                        print(f"\n>>> Task {self.processor_assigned_task.name} COMPLETED BURST for current period <<<\n")
+                        self.completed_periods += 1
+                        
                         if self.processor_assigned_task.repetitions_number > 0:
-                            # Put back in ready queue if there are more repetitions
-                            self.Ready_queue.append(self.processor_assigned_task)
+                            self.processor_assigned_task.repetitions_number -= 1
+                            if self.processor_assigned_task.repetitions_number > 0:
+                                # Calculate next arrival and put in waiting_arrivals
+                                task = self.processor_assigned_task
+                                task.proceed_executed_time = 0
+                                task.current_burst_complete = False
+                                # Fix: Next arrival should be based on first arrival plus period multiples
+                                periods_completed = (self.current_time - task.arrival_time) // task.period
+                                task.arrival_time = task.arrival_time + (periods_completed + 1) * task.period
+                                
+                                # Insert into waiting_arrivals maintaining sort
+                                insert_idx = 0
+                                for idx, t in enumerate(self.waiting_arrivals):
+                                    if t.arrival_time > task.arrival_time:
+                                        break
+                                    insert_idx = idx + 1
+                                self.waiting_arrivals.insert(insert_idx, task)
+                                print(f"Task {task.name} scheduled for next arrival at {task.arrival_time}")
+                            else:
+                                self.finished_tasks.append(self.processor_assigned_task)
+                                
                         self.processor_assigned_task = None
                         self.processor_busy_time = 0
-                        self.quantum_task = None
+                        # Don't clear quantum_task here, let it persist for one more cycle
 
                 self.processor_status = False
 
@@ -105,5 +169,4 @@ class subsystem3:
         processor_thread = threading.Thread(target=self.processor1)
         processor_thread.start()
         return
-
 

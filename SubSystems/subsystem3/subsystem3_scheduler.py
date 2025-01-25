@@ -32,23 +32,21 @@ def get_next_deadline(task, current_time):
     return task.arrival_time + (periods_passed + 1) * task.period
 
 def rate_monotonic_schedule(ready_queue, current_time):
-    """Implement Rate Monotonic scheduling"""
+    """Returns task with shortest period (highest priority) and its next deadline"""
     if not ready_queue:
-        return None, None
+        return None, float('inf')
     
-    # Sort by period - shortest period gets highest priority
-    # 1/period would give us priority, so sorting by period directly gives same result
-    ready_tasks = [task for task in ready_queue if task.repetitions_number > 0]
-    if not ready_tasks:
-        return None, None
-        
-    selected_task = min(ready_tasks, key=lambda x: x.period)
-    next_deadline = get_next_deadline(selected_task, current_time)
-    
-    if selected_task.get_remaining_execution_time() > 0:
-        return selected_task, next_deadline
-            
-    return None, None
+    highest_priority_task = min(ready_queue, key=lambda x: x.period)
+    return highest_priority_task, highest_priority_task.next_deadline
+
+def should_preempt(current_task, ready_queue):
+    """Check if current task should be preempted by a task in ready queue"""
+    if not ready_queue:
+        return False
+    for task in ready_queue:
+        if task.period < current_task.period:  # Rate Monotonic: shorter period = higher priority
+            return True
+    return False
 
 def needs_speedup(ready_queue, current_time):
     """Determine if tasks need speedup to meet deadlines"""
