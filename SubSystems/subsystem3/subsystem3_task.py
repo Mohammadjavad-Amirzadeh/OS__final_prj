@@ -13,6 +13,7 @@ class subsystem3_task:
         self.next_deadline = arrival_time + period
         self.is_accepted = None  # New flag to track if task has been accepted
         self.current_burst_complete = False  # New flag to track burst completion
+        self.speedup_resources = None
         
     def get_remaining_execution_time(self):
         return self.execution_time - self.proceed_executed_time

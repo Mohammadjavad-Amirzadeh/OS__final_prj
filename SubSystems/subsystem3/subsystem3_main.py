@@ -4,33 +4,40 @@ import time
 from .subsystem3_scheduler import (rate_monotonic_schedule, 
                                  is_schedulable_rm,
                                  get_next_deadline,
-                                 should_preempt)  # Add this import
+                                 should_preempt) 
 
 class subsystem3:
-    def __init__(self, subsystem3_tasks, resource1_number, resource2_number):
+    def __init__(self, subsystem3_tasks, resource1_number, resource2_number, main_system=None):  
+        self.main_system = main_system  
         self.processors_count = 1
         self.resource1_number = resource1_number
         self.resource2_number = resource2_number
-        self.Ready_queue = []  # Actually running tasks
-        self.tasks = subsystem3_tasks  # All tasks including future arrivals
+        self.Ready_queue = []  
+        self.tasks = subsystem3_tasks  
         self.waiting_arrivals = sorted(subsystem3_tasks, key=lambda x: x.arrival_time)
         
         self.processor_status = False
         self.processor_busy_time = 0
         self.processor_assigned_task = None
         self.quantum_task = None
-        self.just_completed = None  # Add new variable to track task that just completed its burst
+        self.just_completed = None  
         
         self.current_time = -1
         self.resource_lock = threading.Lock()
         self.completed_periods = 0
-        self.finished_tasks = []  # Add list for finished tasks
+        self.finished_tasks = [] 
         self.rejected_tasks = []
         
     def can_accept_task(self, new_task, current_time):
         """Determine if a new task can be accepted with current tasks"""
         test_tasks = self.Ready_queue + [new_task]
         return is_schedulable_rm(test_tasks)
+
+    def request_resources_from_main(self, r1_needed, r2_needed):
+        """Wrapper to call main system's request_resources function"""
+        if self.main_system:
+            return self.main_system.request_resources(r1_needed, r2_needed)
+        return False, {'sub1': (0, 0), 'sub2': (0, 0)}  
 
     def set_clock(self):
         self.current_time += 1
@@ -40,20 +47,43 @@ class subsystem3:
         while self.waiting_arrivals and self.waiting_arrivals[0].arrival_time <= self.current_time:
             new_task = self.waiting_arrivals.pop(0)
             if new_task.is_accepted is None:  # Only check acceptance for first arrival
-                if self.can_accept_task(new_task, self.current_time):
-                    if new_task.resource1_usage <= self.resource1_number and new_task.resource2_usage <= self.resource2_number:
-                        new_task.is_accepted = True
-                        self.Ready_queue.append(new_task)
-                        new_task.next_deadline = new_task.arrival_time + new_task.period
-                        print(f"First arrival: Accepted task {new_task.name} with period {new_task.period}, deadline: {new_task.next_deadline}")
-                    else:
-                        new_task.is_accepted = False
-                        print(f"First arrival: Rejected task {new_task.name} - Not Enough resources")
-                        self.rejected_tasks.append(new_task)
+                # Try regular acceptance first
+                regular_schedulable = self.can_accept_task(new_task, self.current_time)
+                has_local_resources = (new_task.resource1_usage <= self.resource1_number and 
+                                     new_task.resource2_usage <= self.resource2_number)
+                
+                if regular_schedulable and has_local_resources:
+                    new_task.is_accepted = True
+                    self.Ready_queue.append(new_task)
+                    new_task.next_deadline = new_task.arrival_time + new_task.period
+                    print(f"First arrival: Accepted task {new_task.name} with period {new_task.period}, deadline: {new_task.next_deadline}")
                 else:
-                    new_task.is_accepted = False
-                    print(f"First arrival: Rejected task {new_task.name} - Cannot guarantee {new_task.period} period deadline")
-                    self.rejected_tasks.append(new_task)
+                    # Try speedup before rejecting
+                    print(f"Task {new_task.name} needs speedup, attempting to request additional resources...")
+                    success, allocated = self.request_resources_from_main(new_task.resource1_usage, new_task.resource2_usage)
+                    
+                    if success:
+                        # Test schedulability with halved execution time
+                        original_exec_time = new_task.execution_time
+                        new_task.execution_time = original_exec_time / 2
+                        speedup_schedulable = self.can_accept_task(new_task, self.current_time)
+                        
+                        if speedup_schedulable:
+                            print(f"Speedup successful for {new_task.name}! New execution time: {new_task.execution_time}")
+                            new_task.is_accepted = True
+                            new_task.speedup_needed = True
+                            new_task.speedup_resources = allocated
+                            self.Ready_queue.append(new_task)
+                            new_task.next_deadline = new_task.arrival_time + new_task.period
+                        else:
+                            print(f"Even with speedup, {new_task.name} cannot meet deadlines")
+                            new_task.execution_time = original_exec_time  # Restore original execution time
+                            new_task.is_accepted = False
+                            self.rejected_tasks.append(new_task)
+                    else:
+                        print(f"Could not get additional resources for {new_task.name}")
+                        new_task.is_accepted = False
+                        self.rejected_tasks.append(new_task)
             else:  # For subsequent arrivals
                 if new_task.is_accepted:
                     self.Ready_queue.append(new_task)
@@ -117,6 +147,10 @@ class subsystem3:
                                     self.waiting_arrivals.insert(insert_idx, task)
                                     print(f"Task {task.name} scheduled for next arrival at {task.arrival_time}")
                                 else:
+                                    if self.processor_assigned_task.speedup_needed:
+                                        print("sped up task finished")
+                                        print("Releasing speedup resources")
+                                        self.main_system.release_resources(self.processor_assigned_task.speedup_resources)
                                     self.finished_tasks.append(self.processor_assigned_task)
                                     
                             self.processor_assigned_task = None
@@ -153,6 +187,10 @@ class subsystem3:
                                 self.waiting_arrivals.insert(insert_idx, task)
                                 print(f"Task {task.name} scheduled for next arrival at {task.arrival_time}")
                             else:
+                                if self.processor_assigned_task.speedup_needed:
+                                    print("Releasing speedup resources")
+                                    self.main_system.release_resources(self.processor_assigned_task.speedup_resources)
+
                                 self.finished_tasks.append(self.processor_assigned_task)
                                 
                         self.processor_assigned_task = None
