@@ -65,7 +65,7 @@ def run():
         sub_thread.start()
     
     while True:
-        print(f'\n{"="*50}')
+        print(f'\n{"="*100}')
         print('Time: ', Time)
         
         # Reset quantum status tracking
@@ -86,7 +86,7 @@ def run():
                 SUB3.is_processor_finished()):  # Add SUB3 check
                 break
             time.sleep(0.1)
-            
+        print(f'\n{"-"*50}')
         print('SUB1: ')
         print(f'\tResources: R1: {SUB1.reamining_resource1_number}/{sub1_r1}, R2: {SUB1.reamining_resource2_number}/{sub1_r2}')
         
