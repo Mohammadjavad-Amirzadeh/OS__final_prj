@@ -105,13 +105,13 @@ class subsystem1:
         while not self.Waiting_queue.empty():
             _, task = self.Waiting_queue.get()
             best_ready_queue = self.appropriate_ready_queue_for_load_task()
-            if self.processor_number == 1:
+            if task.processor_number == 1:
                 # print(f"SUBSYSTEM 1 : TASK {task.name} MOVED TO Ready_queue1 By LOAD_BALANCER")
                 self.Ready_queue1.append(task)
-            elif self.processor_number == 2:
+            elif task.processor_number == 2:
                 # print(f"SUBSYSTEM 1 : TASK {task.name} MOVED TO Ready_queue2 By LOAD_BALANCER")
                 self.Ready_queue2.append(task)
-            elif self.processor_number == 3:
+            elif task.processor_number == 3:
                 # print(f"SUBSYSTEM 1 : TASK {task.name} MOVED TO Ready_queue3 By LOAD_BALANCER")                
                 self.Ready_queue3.append(task)
                 
