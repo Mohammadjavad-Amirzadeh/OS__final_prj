@@ -86,7 +86,7 @@ class subsystem4:
         return not(self.processor1_status) and not(self.processor2_status)
     
     def probability_of_error(self):
-        return random.randint(1, 10) <= 0
+        return random.randint(1, 10) <= 3
     
     def processor1(self):
         while True:
@@ -203,6 +203,7 @@ class subsystem4:
                         else:
                             self.subsystem_did['processor1'] = 'IDLE'
                     else:
+                        self.subsystem_did['processor1'] = 'IDLE'
                         print('SUBSYSTEM 4 : READY QUEUE IS EMPTY')
                             
                 self.processor1_status = False
@@ -322,6 +323,7 @@ class subsystem4:
                         else:
                             self.subsystem_did['processor2'] = 'IDLE'
                     else:
+                        self.subsystem_did['processor2'] = 'IDLE'
                         print("SUBSYSTEM 4 : READY QUEUE IS EMPTY") 
                                    
                 self.processor2_status = False
