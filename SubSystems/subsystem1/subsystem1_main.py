@@ -209,6 +209,7 @@ class subsystem1:
                 if self.processor1_busy_time > 0: # there is a task that should be run
                     if self.processor1_assigned_task:
                         # EXECUTION
+                        self.processor1_assigned_task.state = 'Running'
                         self.subsystem_did['processor1'] = self.processor1_assigned_task
                         self.processor1_assigned_task.proceed_executed_time += 1 
                         self.processor1_busy_time -= 1
@@ -222,6 +223,7 @@ class subsystem1:
                                                        self.current_time,
                                                        self.processor1_assigned_task.proceed_executed_time,
                                                        "subsystem1_core1")  # Add core name
+                            self.processor1_assigned_task.state = 'finished'
                             self.finished_tasks.append(self.processor1_assigned_task)
                             self.processor1_assigned_task = None
                             self.processor1_busy_time = 0
@@ -231,6 +233,7 @@ class subsystem1:
                                 self.reamining_resource2_number += self.processor1_assigned_task.resource2_usage
                             print(f"SUBSYSTEM 1 : ENDED QUANTUM OF THIS TASK IN PROCESSOR 1 => {self.processor1_assigned_task} AND GIVE BACK THIS RESOURCES R1 = {self.processor1_assigned_task.resource1_usage}, R2 = {self.processor1_assigned_task.resource2_usage}")
                             with self.ready_queue_lock:
+                                self.processor1_assigned_task.state = 'Ready'
                                 self.Ready_queue1.append(self.processor1_assigned_task)
                                 
                             self.processor1_assigned_task = None
@@ -272,6 +275,7 @@ class subsystem1:
                         with self.ready_queue_lock:
                             self.processor1_busy_time = weighted_round_robbin(self.Ready_queue1, self.processor1_assigned_task)
                         # EXECUTION
+                        self.processor1_assigned_task.state = 'Running'
                         self.processor1_assigned_task.assigned_quantum = self.processor1_busy_time
                         print(f"SUBSYSTEM 1 : THIS TASK GET PROCESSOR 1 => {self.processor1_assigned_task}, AND GET QUANTUM = {self.processor1_assigned_task.assigned_quantum}, AND THIS RESOURCES : R1 = {self.processor1_assigned_task.resource1_usage}, R2 = {self.processor1_assigned_task.resource2_usage}")
                         self.subsystem_did['processor1'] = self.processor1_assigned_task
@@ -287,6 +291,7 @@ class subsystem1:
                                                        self.current_time,
                                                        self.processor1_assigned_task.proceed_executed_time,
                                                        "subsystem1_core1")  # Add core name
+                            self.processor1_assigned_task.state = 'finished'
                             self.finished_tasks.append(self.processor1_assigned_task)
                             self.processor1_assigned_task = None
                             self.processor1_busy_time = 0
@@ -296,6 +301,7 @@ class subsystem1:
                                 self.reamining_resource2_number += self.processor1_assigned_task.resource2_usage
                             print(f"SUBSYSTEM 1 : ENDED QUANTUM OF THIS TASK IN PROCESSOR 1 => {self.processor1_assigned_task} AND GIVE BACK THIS RESOURCES R1 = {self.processor1_assigned_task.resource1_usage}, R2 = {self.processor1_assigned_task.resource2_usage}")
                             with self.ready_queue_lock:
+                                self.processor1_assigned_task.state = 'Ready'
                                 self.Ready_queue1.append(self.processor1_assigned_task)
                                 
                             self.processor1_assigned_task = None
@@ -320,6 +326,7 @@ class subsystem1:
                 if self.processor2_busy_time > 0: # there is a task that should be run
                     if self.processor2_assigned_task:
                         # EXECUTION
+                        self.processor2_assigned_task.state = 'Running'
                         self.subsystem_did['processor2'] = self.processor2_assigned_task
                         self.processor2_assigned_task.proceed_executed_time += 1 
                         self.processor2_busy_time -= 1
@@ -333,6 +340,7 @@ class subsystem1:
                                                        self.current_time,
                                                        self.processor2_assigned_task.proceed_executed_time,
                                                        "subsystem1_core2")  # Add core name
+                            self.processor2_assigned_task.state = 'finished'
                             self.finished_tasks.append(self.processor2_assigned_task)
                             self.processor2_assigned_task = None
                             self.processor2_busy_time = 0
@@ -342,6 +350,7 @@ class subsystem1:
                                 self.reamining_resource2_number += self.processor2_assigned_task.resource2_usage
                             print(f"SUBSYSTEM 1 : ENDED QUANTUM OF THIS TASK IN PROCESSOR 2 => {self.processor2_assigned_task} AND GIVE BACK THIS RESOURCES R1 = {self.processor2_assigned_task.resource1_usage}, R2 = {self.processor2_assigned_task.resource2_usage}")
                             with self.ready_queue_lock:
+                                self.processor2_assigned_task.state = 'Ready'
                                 self.Ready_queue2.append(self.processor2_assigned_task)
                                
                             self.processor2_assigned_task = None
@@ -384,6 +393,7 @@ class subsystem1:
                         with self.ready_queue_lock:
                             self.processor2_busy_time = weighted_round_robbin(self.Ready_queue2, self.processor2_assigned_task)
                         # EXECUTION
+                        self.processor2_assigned_task.state = 'Running'
                         self.processor2_assigned_task.assigned_quantum = self.processor2_busy_time
                         print(f"SUBSYSTEM 1 : THIS TASK GET PROCESSOR 2 => {self.processor2_assigned_task}, AND GET QUANTUM = {self.processor2_assigned_task.assigned_quantum}, AND THIS RESOURCES : R1 = {self.processor2_assigned_task.resource1_usage}, R2 = {self.processor2_assigned_task.resource2_usage}")
                         self.subsystem_did['processor2'] = self.processor2_assigned_task
@@ -399,6 +409,7 @@ class subsystem1:
                                                        self.current_time,
                                                        self.processor2_assigned_task.proceed_executed_time,
                                                        "subsystem1_core2")  # Add core name
+                            self.processor2_assigned_task.state = 'finished'
                             self.finished_tasks.append(self.processor2_assigned_task)
                             self.processor2_assigned_task = None
                             self.processor2_busy_time = 0
@@ -408,6 +419,7 @@ class subsystem1:
                                 self.reamining_resource2_number += self.processor2_assigned_task.resource2_usage
                             print(f"SUBSYSTEM 1 : ENDED QUANTUM OF THIS TASK IN PROCESSOR 2 => {self.processor2_assigned_task} AND GIVE BACK THIS RESOURCES R1 = {self.processor2_assigned_task.resource1_usage}, R2 = {self.processor2_assigned_task.resource2_usage}")
                             with self.ready_queue_lock:
+                                self.processor2_assigned_task.state = 'Ready'
                                 self.Ready_queue2.append(self.processor2_assigned_task)                                
                                 
                             self.processor2_assigned_task = None
@@ -431,6 +443,7 @@ class subsystem1:
                 if self.processor3_busy_time > 0: # there is a task that should be run
                     if self.processor3_assigned_task:
                         # EXECUTION
+                        self.processor3_assigned_task.state = 'Running'
                         self.subsystem_did['processor3'] = self.processor3_assigned_task
                         self.processor3_assigned_task.proceed_executed_time += 1 
                         self.processor3_busy_time -= 1
@@ -444,6 +457,7 @@ class subsystem1:
                                                        self.current_time,
                                                        self.processor3_assigned_task.proceed_executed_time,
                                                        "subsystem1_core3")  # Add core name
+                            self.processor3_assigned_task.state = 'finished'
                             self.finished_tasks.append(self.processor3_assigned_task)
                             self.processor3_assigned_task = None
                             self.processor3_busy_time = 0
@@ -453,6 +467,7 @@ class subsystem1:
                                 self.reamining_resource2_number += self.processor3_assigned_task.resource2_usage
                             print(f"SUBSYSTEM 1 : ENDED QUANTUM OF THIS TASK IN PROCESSOR 3 => {self.processor3_assigned_task} AND GIVE BACK THIS RESOURCES R1 = {self.processor3_assigned_task.resource1_usage}, R2 = {self.processor3_assigned_task.resource2_usage}")
                             with self.ready_queue_lock:
+                                self.processor3_assigned_task.state = 'Ready'
                                 self.Ready_queue3.append(self.processor3_assigned_task)
                                 
                             self.processor3_assigned_task = None
@@ -493,6 +508,7 @@ class subsystem1:
                         with self.ready_queue_lock:
                             self.processor3_busy_time = weighted_round_robbin(self.Ready_queue3, self.processor3_assigned_task)
                         # EXECUTION
+                        self.processor3_assigned_task.state = 'Running'
                         self.processor3_assigned_task.assigned_quantum = self.processor3_busy_time
                         print(f"SUBSYSTEM 1 : THIS TASK GET PROCESSOR 3 => {self.processor3_assigned_task}, AND GET QUANTUM = {self.processor3_assigned_task.assigned_quantum}, AND THIS RESOURCES : R1 = {self.processor3_assigned_task.resource1_usage}, R2 = {self.processor3_assigned_task.resource2_usage}")
                         self.subsystem_did['processor3'] = self.processor3_assigned_task
@@ -508,6 +524,7 @@ class subsystem1:
                                                        self.current_time,
                                                        self.processor3_assigned_task.proceed_executed_time,
                                                        "subsystem1_core3")  # Add core name
+                            self.processor3_assigned_task.state = 'finished'
                             self.finished_tasks.append(self.processor3_assigned_task)
                             self.processor3_assigned_task = None
                             self.processor3_busy_time = 0
@@ -517,6 +534,7 @@ class subsystem1:
                                 self.reamining_resource2_number += self.processor3_assigned_task.resource2_usage
                             print(f"SUBSYSTEM 1 : ENDED QUANTUM OF THIS TASK IN PROCESSOR 3 => {self.processor3_assigned_task} AND GIVE BACK THIS RESOURCES R1 = {self.processor3_assigned_task.resource1_usage}, R2 = {self.processor3_assigned_task.resource2_usage}")
                             with self.ready_queue_lock:
+                                self.processor3_assigned_task.state = 'Ready'
                                 self.Ready_queue3.append(self.processor3_assigned_task)
                                 
                             self.processor3_assigned_task = None

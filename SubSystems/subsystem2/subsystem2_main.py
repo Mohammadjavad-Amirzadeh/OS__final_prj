@@ -118,12 +118,14 @@ class subsystem2:
                                 else:
                                     can_assign_resources = False
                                     with self.ready_queue_lock:
+                                        new_shorter_task.state = 'Ready'
                                         self.Ready_queue.put((new_shorter_task.get_remaining_execution_time(), new_shorter_task))
                                         
                             if can_assign_resources:
                                 self.processor1_assigned_task = new_shorter_task
                                 self.processor1_busy_time = self.processor1_assigned_task.get_remaining_execution_time()
                                 # EXECUTION
+                                self.processor1_assigned_task.state = 'Running'
                                 self.subsystem_did['processor1'] = self.processor1_assigned_task
                                 self.processor1_assigned_task.proceed_executed_time += 1
                                 self.processor1_busy_time -= 1
@@ -136,6 +138,7 @@ class subsystem2:
                                                                                      self.current_time,
                                                                                      self.processor1_assigned_task.proceed_executed_time,
                                                                                      "subsystem2_core1")  # Add core name
+                                    self.processor1_assigned_task.state = 'finished'
                                     self.finished_and_aborted_tasks.append(self.processor1_assigned_task)
                                     self.processor1_assigned_task = None
                                     self.processor1_busy_time = 0 
@@ -143,6 +146,7 @@ class subsystem2:
                                 self.subsystem_did['processor1'] = 'IDLE'
                         else:
                             # EXECUTION
+                            self.processor1_assigned_task.state = 'Running'
                             self.subsystem_did['processor1'] = self.processor1_assigned_task
                             self.processor1_assigned_task.proceed_executed_time += 1
                             self.processor1_busy_time -= 1
@@ -155,6 +159,7 @@ class subsystem2:
                                                                                  self.current_time,
                                                                                  self.processor1_assigned_task.proceed_executed_time,
                                                                                  "subsystem2_core1")  # Add core name
+                                self.processor1_assigned_task.state = 'finished'
                                 self.finished_and_aborted_tasks.append(self.processor1_assigned_task)
                                 self.processor1_assigned_task = None
                                 self.processor1_busy_time = 0  
@@ -177,11 +182,13 @@ class subsystem2:
                             else:
                                 can_assign_resources = False
                                 with self.ready_queue_lock:
+                                    new_task.state='Ready'
                                     self.Ready_queue.put((new_task.get_remaining_execution_time(), new_task))
                         if can_assign_resources:
                             self.processor1_assigned_task = new_task
                             self.processor1_busy_time = self.processor1_assigned_task.get_remaining_execution_time()
                             # EXECUTION
+                            self.processor1_assigned_task.state = 'Running'
                             self.subsystem_did['processor1'] = self.processor1_assigned_task
                             self.processor1_assigned_task.proceed_executed_time += 1
                             self.processor1_busy_time -= 1
@@ -194,6 +201,7 @@ class subsystem2:
                                                                                  self.current_time,
                                                                                  self.processor1_assigned_task.proceed_executed_time,
                                                                                  "subsystem2_core1")  # Add core name
+                                self.processor1_assigned_task.state = 'finished'
                                 self.finished_and_aborted_tasks.append(self.processor1_assigned_task)
                                 self.processor1_assigned_task = None
                                 self.processor1_busy_time = 0 
@@ -228,12 +236,14 @@ class subsystem2:
                                 else:
                                     can_assign_resources = False
                                     with self.ready_queue_lock:
+                                        new_shorter_task.state = 'Ready'
                                         self.Ready_queue.put((new_shorter_task.get_remaining_execution_time(), new_shorter_task))
                                         
                             if can_assign_resources:
                                 self.processor2_assigned_task = new_shorter_task
                                 self.processor2_busy_time = self.processor2_assigned_task.get_remaining_execution_time()
                                 # EXECUTION
+                                self.processor2_assigned_task.state = 'Running'
                                 self.subsystem_did['processor2'] = self.processor2_assigned_task
                                 self.processor2_assigned_task.proceed_executed_time += 1
                                 self.processor2_busy_time -= 1
@@ -246,6 +256,7 @@ class subsystem2:
                                                                                      self.current_time,
                                                                                      self.processor2_assigned_task.proceed_executed_time,
                                                                                      "subsystem2_core2")  # Add core name
+                                    self.processor2_assigned_task.state = 'finished'
                                     self.finished_and_aborted_tasks.append(self.processor2_assigned_task)
                                     self.processor2_assigned_task = None
                                     self.processor2_busy_time = 0 
@@ -253,6 +264,7 @@ class subsystem2:
                                 self.subsystem_did['processor2'] = 'IDLE'
                         else:
                             # EXECUTION
+                            self.processor2_assigned_task.state = 'Running'
                             self.subsystem_did['processor2'] = self.processor2_assigned_task
                             self.processor2_assigned_task.proceed_executed_time += 1
                             self.processor2_busy_time -= 1
@@ -265,6 +277,7 @@ class subsystem2:
                                                                                  self.current_time,
                                                                                  self.processor2_assigned_task.proceed_executed_time,
                                                                                  "subsystem2_core2")  # Add core name
+                                self.processor2_assigned_task.state = 'finished'
                                 self.finished_and_aborted_tasks.append(self.processor2_assigned_task)
                                 self.processor2_assigned_task = None
                                 self.processor2_busy_time = 0  
@@ -286,11 +299,13 @@ class subsystem2:
                             else:
                                 can_assign_resources = False
                                 with self.ready_queue_lock:
+                                    new_task.state = 'Ready'
                                     self.Ready_queue.put((new_task.get_remaining_execution_time(), new_task))
                         if can_assign_resources:
                             self.processor2_assigned_task = new_task
                             self.processor2_busy_time = self.processor2_assigned_task.get_remaining_execution_time()
                             # EXECUTION
+                            self.processor2_assigned_task.state = 'Running'
                             self.subsystem_did['processor2'] = self.processor2_assigned_task
                             self.processor2_assigned_task.proceed_executed_time += 1
                             self.processor2_busy_time -= 1
@@ -303,6 +318,7 @@ class subsystem2:
                                                                                  self.current_time,
                                                                                  self.processor2_assigned_task.proceed_executed_time,
                                                                                  "subsystem2_core2")  # Add core name
+                                self.processor2_assigned_task.state = 'finished'
                                 self.finished_and_aborted_tasks.append(self.processor2_assigned_task)
                                 self.processor2_assigned_task = None
                                 self.processor2_busy_time = 0 
